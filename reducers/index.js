@@ -18,6 +18,7 @@ import chatsReducer from './chatsReducer';
   ]
 } */
 
-export default rootReducer = combineReducers({
-    messageReducer, chatsReducer
-});
+export default (rootReducer = combineReducers({
+    messageReducer,
+    chatsReducer
+}));

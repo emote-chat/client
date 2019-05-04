@@ -10,7 +10,12 @@ import {
     TouchableHighlight
 } from 'react-native';
 import { connect } from 'react-redux';
-import { createMessage, setCurrentUser, setCurrentChat, createChat } from "../actions";
+import {
+    createMessage,
+    setCurrentUser,
+    setCurrentChat,
+    createChat
+} from '../actions';
 
 import {
     Container,
@@ -50,19 +55,17 @@ class ChatsScreen extends React.Component {
         header: null
     };
 
-    createMessage = () => (this.props.createMessage(1, 1, "Test", "David", { David: ':joy:', Nick: ':laughing:' }));
-    setCurrentUser = () => (this.props.setCurrentUser("David"));
-    setCurrentChat = () => (this.props.setCurrentChat(1));
-    createChat1 = () => (this.props.createChat(
-        1,
-        'Tea Chats',
-        ['David', 'Nick']
-    ));
-    createChat2 = () => (this.props.createChat(
-        2,
-        'Coffee Chats',
-        ['David', 'Ryan']
-    ));
+    createMessage = () =>
+        this.props.createMessage(1, 1, 'Test', 'David', {
+            David: ':joy:',
+            Nick: ':laughing:'
+        });
+    setCurrentUser = () => this.props.setCurrentUser('David');
+    setCurrentChat = () => this.props.setCurrentChat(1);
+    createChat1 = () =>
+        this.props.createChat(1, 'Tea Chats', ['David', 'Nick']);
+    createChat2 = () =>
+        this.props.createChat(2, 'Coffee Chats', ['David', 'Ryan']);
 
     renderChats = ({ item, index }) => {
         return (
@@ -198,4 +201,7 @@ const styles = StyleSheet.create({
     }
 });
 
-export default connect(mapStateToProps, mapDispatchToProps)(ChatsScreen);
+export default connect(
+    mapStateToProps,
+    mapDispatchToProps
+)(ChatsScreen);

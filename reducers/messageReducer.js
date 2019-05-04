@@ -1,11 +1,11 @@
-import * as types from "../constants/actionTypes";
+import * as types from '../constants/actionTypes';
 
 const messageInitialState = {
     messages: []
 };
 
 function messageReducer(state = messageInitialState, action) {
-    console.log("messageReducer");
+    console.log('messageReducer');
     console.log(state);
     const { payload, type } = action;
 

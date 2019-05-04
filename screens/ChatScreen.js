@@ -117,8 +117,7 @@ function mapStateToProps({ messages }) {
     return { messages };
 }
 
-const mapDispatchToProps = {
-};
+const mapDispatchToProps = {};
 
 const styles = StyleSheet.create({
     container: {
@@ -161,4 +160,7 @@ const styles = StyleSheet.create({
     }
 });
 
-export default connect(mapStateToProps, mapDispatchToProps)(ChatScreen);
+export default connect(
+    mapStateToProps,
+    mapDispatchToProps
+)(ChatScreen);

@@ -1,4 +1,4 @@
-import * as types from "../constants/actionTypes";
+import * as types from '../constants/actionTypes';
 
 const userInitialState = {
     user: '',
@@ -7,7 +7,7 @@ const userInitialState = {
 };
 
 function chatsReducer(state = userInitialState, action) {
-    console.log("chatsReducer");
+    console.log('chatsReducer');
     console.log(state);
     const { payload, type } = action;
 
