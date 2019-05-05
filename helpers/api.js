@@ -17,11 +17,8 @@ const handleResponse = (response) => {
 
 const storeData = ({ access_token, user }) => {
     try {
-        const userData = [
-            ['userToken', access_token],
-            ['user', JSON.stringify(user)]
-        ];
-        AsyncStorage.multiSet(userData);
+        const userData = JSON.stringify({...user, userToken: access_token});
+        AsyncStorage.setItem('user', userData);
         return Promise.resolve();
     } catch (error) {
         console.error(error);

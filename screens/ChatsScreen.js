@@ -34,10 +34,10 @@ class ChatsScreen extends React.Component {
     };
 
     async componentDidMount() {
-        const userToken = await AsyncStorage.getItem('userToken');
-        const user = await AsyncStorage.getItem('user');
-        await setCurrentUser(userToken, user);
-        fetchChats(userToken, user);
+        const storedUser = await AsyncStorage.getItem('user');
+        const user = JSON.parse(storedUser);
+        await setCurrentUser(user);
+        fetchChats(user);
     }
 
     renderChats = ({ item, index }) => {

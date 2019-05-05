@@ -39,8 +39,9 @@ class CreateChatScreen extends React.Component {
 
     _submitForm = async () => {
         const { name } = this.state;
-        const userToken = await AsyncStorage.getItem('userToken');
-        this.props.putChat(name, userToken);
+        const storedUser = await AsyncStorage.getItem('user');
+        const user = JSON.parse(storedUser);
+        this.props.putChat(name, user);
     };
 
     render() {

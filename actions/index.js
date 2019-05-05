@@ -40,7 +40,7 @@ export function createChat(name, users) {
     };
 }
 
-export function fetchChats(userToken, user) {
+export function fetchChats({id, userToken}) {
     return function(dispatch) {
         dispatch(getChats());
         return fetch(`${baseUrl}chat`, {
@@ -48,13 +48,13 @@ export function fetchChats(userToken, user) {
                 Accept: 'application/json',
                 'Content-Type': 'application/json',
                 authorization: `Bearer ${userToken}`,
-                userId: user.id
+                userId: id
             }
         }).then(handleResponse);
     };
 }
 
-export function putChat(name, userToken) {
+export function putChat(name, user) {
     return function(dispatch) {
         dispatch(createChat());
         return fetch(`${baseUrl}chat`, {
@@ -63,7 +63,7 @@ export function putChat(name, userToken) {
                 'Content-Type': 'application/json',
                 Accept: 'application/json',
                 userId: 1,
-                authorization: `Bearer ${userToken}`
+                authorization: `Bearer ${user.userToken}`
             },
             body: JSON.stringify({ name })
         }).then(handleResponse);
