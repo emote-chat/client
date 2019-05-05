@@ -45,10 +45,8 @@ export function fetchChats({id, userToken}) {
         dispatch(getChats());
         return fetch(`${baseUrl}chat`, {
             headers: {
-                Accept: 'application/json',
-                'Content-Type': 'application/json',
                 authorization: `Bearer ${userToken}`,
-                userId: id
+                id
             }
         }).then(handleResponse);
     };
