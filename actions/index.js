@@ -1,17 +1,19 @@
 import * as types from '../constants/actionTypes';
+import { baseUrl } from '../constants/api';
+import { handleResponse, storeData } from '../helpers/api';
+import { AsyncStorage } from 'react-native';
 
-// Action Creators
-export function setCurrentUser(user) {
+export function setCurrentUser(user, userToken) {
     return {
         type: types.SET_CURRENT_USER,
-        payload: user
+        payload: { user, userToken }
     };
 }
 
-export function setCurrentChat(chatId) {
+// Chats
+export function getChats() {
     return {
-        type: types.SET_CURRENT_CHAT,
-        payload: chatId
+        type: types.GET_CHATS
     };
 }
 
@@ -28,13 +30,42 @@ export function createMessage(id, cid, message, user, emojis) {
     };
 }
 
-export function createChat(id, name, users) {
+export function createChat(name, users) {
     return {
         type: types.CREATE_CHAT,
         payload: {
-            id,
             name,
             users
         }
+    };
+}
+
+export function fetchChats(userToken, user) {
+    return function(dispatch) {
+        dispatch(getChats());
+        return fetch(`${baseUrl}chat`, {
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+                authorization: `Bearer ${userToken}`,
+                userId: user.id
+            }
+        }).then(handleResponse);
+    };
+}
+
+export function putChat(name, userToken) {
+    return function(dispatch) {
+        dispatch(createChat());
+        return fetch(`${baseUrl}chat`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Accept: 'application/json',
+                userId: 1,
+                authorization: `Bearer ${userToken}`
+            },
+            body: JSON.stringify({ name })
+        }).then(handleResponse);
     };
 }

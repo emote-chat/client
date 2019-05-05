@@ -1,6 +1,5 @@
 import React from 'react';
-import { StyleSheet, AsyncStorage } from 'react-native';
-import { connect } from 'react-redux';
+import { StyleSheet } from 'react-native';
 
 import {
     Container,
@@ -73,7 +72,6 @@ class LoginScreen extends React.Component {
 
     render() {
         const { errorMessage } = this.state;
-        console.log(this.props.count);
         return (
             <Container style={styles.container}>
                 <Content style={styles.content}>
@@ -122,20 +120,6 @@ class LoginScreen extends React.Component {
     }
 }
 
-function mapStateToProps(state) {
-    return {
-        //history: state.messages,
-        //userID: state.userID
-    };
-}
-
-const mapDispatchToProps = {
-    /*addMessage,
-    setCurrentUser,
-    setCurrentChat,
-    addChatRoom*/
-};
-
 const styles = StyleSheet.create({
     container: {
         backgroundColor: '#fff',
@@ -153,7 +137,4 @@ const styles = StyleSheet.create({
     }
 });
 
-export default connect(
-    mapStateToProps,
-    mapDispatchToProps
-)(LoginScreen);
+export default LoginScreen;

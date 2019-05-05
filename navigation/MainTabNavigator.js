@@ -8,11 +8,13 @@ import {
 import TabBarIcon from '../components/TabBarIcon';
 import ChatsScreen from '../screens/ChatsScreen';
 import ChatScreen from '../screens/ChatScreen';
+import CreateChatScreen from '../screens/CreateChatScreen';
 import SettingsScreen from '../screens/SettingsScreen';
 
 const ChatsStack = createStackNavigator({
     Chats: ChatsScreen,
-    Chat: ChatScreen
+    Chat: ChatScreen,
+    CreateChat: CreateChatScreen
 });
 
 ChatsStack.navigationOptions = {

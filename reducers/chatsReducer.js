@@ -1,21 +1,17 @@
 import * as types from '../constants/actionTypes';
 
-const userInitialState = {
-    user: '',
-    currentChat: 0,
+const chatsInitialState = {
+    currentChat: null,
     chats: []
 };
 
-function chatsReducer(state = userInitialState, action) {
-    console.log('chatsReducer');
-    console.log(state);
+function chatsReducer(state = chatsInitialState, action) {
     const { payload, type } = action;
-
     switch (type) {
-        case types.SET_CURRENT_USER:
+        case types.GET_CHATS:
             return {
                 ...state,
-                user: payload
+                chats: payload
             };
         case types.SET_CURRENT_CHAT:
             return {

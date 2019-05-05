@@ -7,8 +7,6 @@ import {
     TouchableOpacity,
     View,
     KeyboardAvoidingView,
-    FlatList,
-    TouchableHighlight,
     AsyncStorage
 } from 'react-native';
 import {
@@ -16,55 +14,37 @@ import {
     Header,
     Title,
     Content,
+    Form,
+    Label,
     Button,
     Left,
     Right,
     Body,
     Icon,
     Text,
+    List,
     ListItem,
     Item,
     Input
 } from 'native-base';
-import { fetchChats, setCurrentUser } from '../actions';
-
-class ChatsScreen extends React.Component {
+import { putChat } from '../actions';
+class CreateChatScreen extends React.Component {
     static navigationOptions = {
         header: null
     };
 
-    async componentDidMount() {
-        const userToken = await AsyncStorage.getItem('userToken');
-        const user = await AsyncStorage.getItem('user');
-        await setCurrentUser(userToken, user);
-        fetchChats(userToken, user);
-    }
+    state = {
+        name: ''
+    };
 
-    renderChats = ({ item, index }) => {
-        return (
-            <ListItem
-                key={item.id}
-                button={true}
-                first={index === 0}
-                onPress={() =>
-                    this.props.navigation.navigate('Chat', {
-                        chatName: item.name,
-                        chatId: item.id
-                    })
-                }>
-                <Left>
-                    <Text>{item.name}</Text>
-                </Left>
-                <Right>
-                    <Icon name="arrow-forward" />
-                </Right>
-            </ListItem>
-        );
+    _submitForm = async () => {
+        const { name } = this.state;
+        const userToken = await AsyncStorage.getItem('userToken');
+        this.props.putChat(name, userToken);
     };
 
     render() {
-        const { chats, navigation } = this.props;
-
+        const { navigation } = this.props;
         return (
             <View style={styles.container}>
                 <ScrollView
@@ -74,33 +54,38 @@ class ChatsScreen extends React.Component {
                         <Header>
                             <Left>
                                 <Button transparent>
-                                    <Icon name="menu" />
+                                    <Icon
+                                        name="md-arrow-back"
+                                        onPress={() =>
+                                            navigation.pop()
+                                        }
+                                    />
                                 </Button>
                             </Left>
                             <Body>
-                                <Title>Chats</Title>
+                                <Title>
+                                    <Text>Create Chat</Text>
+                                </Title>
                             </Body>
                             <Right />
                         </Header>
                         <Content>
-                            <Button
-                                style={styles.button}
-                                onPress={() =>
-                                    navigation.navigate('CreateChat')
-                                }>
-                                <Text>Create new chat</Text>
-                            </Button>
-                            {chats &&
-                                chats.length && (
-                                    <FlatList
-                                        data={chats}
-                                        renderItem={this.renderChats}
-                                        navigation={navigation}
-                                        keyExtractor={(item, index) =>
-                                            String(index)
+                            <Form style={styles.content}>
+                                <Item stackedLabel>
+                                    <Label>Name</Label>
+                                    <Input
+                                        onChangeText={(name) =>
+                                            this.setState({ name })
                                         }
                                     />
-                                )}
+                                </Item>
+                                <Button
+                                    full
+                                    style={styles.button}
+                                    onPress={this._submitForm}>
+                                    <Text>Create</Text>
+                                </Button>
+                            </Form>
                         </Content>
                     </Container>
                 </ScrollView>
@@ -109,12 +94,12 @@ class ChatsScreen extends React.Component {
     }
 }
 
-function mapStateToProps({ chats }) {
-    return { chats };
+function mapStateToProps() {
+    return {};
 }
 
 const mapDispatchToProps = {
-    fetchChats
+    putChat
 };
 
 const styles = StyleSheet.create({
@@ -161,4 +146,4 @@ const styles = StyleSheet.create({
 export default connect(
     mapStateToProps,
     mapDispatchToProps
-)(ChatsScreen);
+)(CreateChatScreen);
