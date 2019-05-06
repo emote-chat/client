@@ -79,16 +79,22 @@ class ChatScreen extends React.Component {
                             <Right />
                         </Header>
                         <Content>
-                            {messages.map(
-                                ({ message, id, isSelf, user }) => (
-                                    <ChatMessage
-                                        message={message}
-                                        key={id}
-                                        isSelf={isSelf}
-                                        user={user}
-                                    />
-                                )
-                            )}
+                            {messages &&
+                                messages.map(
+                                    ({
+                                        message,
+                                        id,
+                                        isSelf,
+                                        user
+                                    }) => (
+                                        <ChatMessage
+                                            message={message}
+                                            key={id}
+                                            isSelf={isSelf}
+                                            user={user}
+                                        />
+                                    )
+                                )}
                         </Content>
                     </Container>
                 </ScrollView>

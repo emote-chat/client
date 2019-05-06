@@ -27,7 +27,7 @@ import {
     Item,
     Input
 } from 'native-base';
-import { putChat } from '../actions';
+import { putChat } from '../actions/chats';
 class CreateChatScreen extends React.Component {
     static navigationOptions = {
         header: null
@@ -39,9 +39,8 @@ class CreateChatScreen extends React.Component {
 
     _submitForm = async () => {
         const { name } = this.state;
-        const storedUser = await AsyncStorage.getItem('user');
-        const user = JSON.parse(storedUser);
-        this.props.putChat(name, user);
+        this.props.putChat(name);
+        this.props.navigation.pop();
     };
 
     render() {

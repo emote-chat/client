@@ -1,5 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+
 import {
     Platform,
     ScrollView,
@@ -26,18 +28,15 @@ import {
     Item,
     Input
 } from 'native-base';
-import { fetchChats, setCurrentUser } from '../actions';
+import { fetchChats, setCurrentChat } from '../actions/chats';
 
 class ChatsScreen extends React.Component {
     static navigationOptions = {
         header: null
     };
 
-    async componentDidMount() {
-        const storedUser = await AsyncStorage.getItem('user');
-        const user = JSON.parse(storedUser);
-        await setCurrentUser(user);
-        fetchChats(user);
+    componentDidMount() {
+        this.props.fetchChats();
     }
 
     renderChats = ({ item, index }) => {
@@ -46,12 +45,13 @@ class ChatsScreen extends React.Component {
                 key={item.id}
                 button={true}
                 first={index === 0}
-                onPress={() =>
+                onPress={() => {
+                    this.props.setCurrentChat(item);
                     this.props.navigation.navigate('Chat', {
                         chatName: item.name,
                         chatId: item.id
-                    })
-                }>
+                    });
+                }}>
                 <Left>
                     <Text>{item.name}</Text>
                 </Left>
@@ -63,8 +63,7 @@ class ChatsScreen extends React.Component {
     };
 
     render() {
-        const { chats, navigation } = this.props;
-
+        const { navigation, chats } = this.props;
         return (
             <View style={styles.container}>
                 <ScrollView
@@ -90,17 +89,16 @@ class ChatsScreen extends React.Component {
                                 }>
                                 <Text>Create new chat</Text>
                             </Button>
-                            {chats &&
-                                chats.length && (
-                                    <FlatList
-                                        data={chats}
-                                        renderItem={this.renderChats}
-                                        navigation={navigation}
-                                        keyExtractor={(item, index) =>
-                                            String(index)
-                                        }
-                                    />
-                                )}
+                            {
+                                <FlatList
+                                    data={chats}
+                                    renderItem={this.renderChats}
+                                    navigation={navigation}
+                                    keyExtractor={(item, index) =>
+                                        String(index)
+                                    }
+                                />
+                            }
                         </Content>
                     </Container>
                 </ScrollView>
@@ -109,13 +107,16 @@ class ChatsScreen extends React.Component {
     }
 }
 
-function mapStateToProps({ chats }) {
-    return { chats };
-}
-
-const mapDispatchToProps = {
-    fetchChats
+const mapStateToProps = ({ chatsReducer: { chats } }) => {
+    return {
+        chats
+    };
 };
+
+const mapDispatchToProps = (dispatch) => ({
+    fetchChats: bindActionCreators(fetchChats, dispatch),
+    setCurrentChat: bindActionCreators(setCurrentChat, dispatch)
+});
 
 const styles = StyleSheet.create({
     container: {
