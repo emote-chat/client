@@ -1,12 +1,12 @@
 import React from 'react';
-import { Text, StyleSheet } from 'react-native';
-import { Content } from 'native-base';
+import { StyleSheet } from 'react-native';
+import { Card, Text } from 'native-base';
 
 export class ChatMessage extends React.Component {
     render() {
         const { message, user, isSelf } = this.props;
         return (
-            <Content style={styles.content}>
+            <Card transparent style={styles.content}>
                 <Text style={isSelf ? styles.self : styles.user}>
                     {user}
                 </Text>
@@ -16,7 +16,7 @@ export class ChatMessage extends React.Component {
                     }>
                     {message}
                 </Text>
-            </Content>
+            </Card>
         );
     }
 }

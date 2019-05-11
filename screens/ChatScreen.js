@@ -29,6 +29,7 @@ import {
 import { WebBrowser } from 'expo';
 
 import { ChatMessage } from '../components/ChatMessage';
+import { EmojiMenu } from '../components/EmojiMenu';
 
 // @NOTE Fake data for now
 const messages = [
@@ -43,6 +44,12 @@ const messages = [
         message: 'cool it is working!',
         user: 'sonam',
         isSelf: false
+    },
+    {
+        id: 3,
+        message: 'hiiii!',
+        user: 'sonam',
+        isSelf: false
     }
 ];
 
@@ -51,8 +58,13 @@ class ChatScreen extends React.Component {
         header: null
     };
 
+    state = {
+        selectedMessage: null
+    };
+
     render() {
         const { navigation } = this.props;
+        const { emojiMenuOpen } = this.state;
         const chatId = navigation.getParam('chatId');
         return (
             <View style={styles.container}>
@@ -86,14 +98,45 @@ class ChatScreen extends React.Component {
                                         id,
                                         isSelf,
                                         user
-                                    }) => (
-                                        <ChatMessage
-                                            message={message}
-                                            key={id}
-                                            isSelf={isSelf}
-                                            user={user}
-                                        />
-                                    )
+                                    }) => {
+                                        const _handleLongPress = () => {
+                                            this.setState({
+                                                selectedMessage: id
+                                            });
+                                        };
+
+                                        const handleEmojiClick = (
+                                            emoji
+                                        ) => {
+                                            // @todo pass id, emoji
+                                        };
+
+                                        const isOpen =
+                                            this.state
+                                                .selectedMessage ==
+                                            id;
+
+                                        return (
+                                            <TouchableOpacity
+                                                key={id}
+                                                onLongPress={
+                                                    _handleLongPress
+                                                }>
+                                                <ChatMessage
+                                                    message={message}
+                                                    isSelf={isSelf}
+                                                    user={user}
+                                                />
+                                                {isOpen && (
+                                                    <EmojiMenu
+                                                        onClick={
+                                                            handleEmojiClick
+                                                        }
+                                                    />
+                                                )}
+                                            </TouchableOpacity>
+                                        );
+                                    }
                                 )}
                         </Content>
                     </Container>
