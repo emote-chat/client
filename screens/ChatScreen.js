@@ -8,6 +8,7 @@ import {
     KeyboardAvoidingView
 } from 'react-native';
 import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
 
 import {
     Container,
@@ -26,7 +27,7 @@ import {
     Input
 } from 'native-base';
 
-import { WebBrowser } from 'expo';
+import { createReaction } from '../actions/chats';
 
 import { ChatMessage } from '../components/ChatMessage';
 import { EmojiMenu } from '../components/EmojiMenu';
@@ -108,7 +109,7 @@ class ChatScreen extends React.Component {
                                         const handleEmojiClick = (
                                             emoji
                                         ) => {
-                                            // @todo pass id, emoji
+                                            this.props.createReaction(id, emoji);
                                         };
 
                                         const isOpen =
@@ -166,7 +167,7 @@ function mapStateToProps({ messages }) {
     return { messages };
 }
 
-const mapDispatchToProps = {};
+const mapDispatchToProps = (dispatch) => ({createReaction: bindActionCreators(createReaction, dispatch)});
 
 const styles = StyleSheet.create({
     container: {

@@ -40,6 +40,13 @@ const createChat = (data) => {
     };
 };
 
+const addReaction = (data) => {
+    return {
+        type: types.ADD_REACTION,
+        payload: data
+    };
+};
+
 export const fetchChats = (data) => {
     return async (dispatch, getState) => {
         const headers = await addAuthHeader();
@@ -71,6 +78,28 @@ export const putChat = (name) => {
             .then(handleResponse)
             .then((data) => {
                 dispatch(createChat(data));
+            });
+    };
+};
+
+export const createReaction = (messageId, emoji) => {
+    return async (dispatch) => {
+        const addUserId = true;
+        const headers = await addAuthHeader(
+            {
+                'Content-Type': 'application/json',
+                Accept: 'application/json'
+            },
+            addUserId
+        );
+        return fetch(`${baseUrl}message/${messageId}/add-reaction`, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify({emoji})
+        })
+            .then(handleResponse)
+            .then((data) => {
+                dispatch(addReaction(data));
             });
     };
 };

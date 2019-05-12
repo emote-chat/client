@@ -3,6 +3,7 @@ export const SET_CURRENT_USER = 'SET_CURRENT_USER';
 
 // Message Reducer
 export const CREATE_MESSAGE = 'CREATE_MESSAGE';
+export const ADD_REACTION = 'ADD_REACTION';
 
 // Chats Reducer
 export const GET_CHATS = 'GET_CHATS';
