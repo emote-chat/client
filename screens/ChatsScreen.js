@@ -28,14 +28,38 @@ import {
     Item,
     Input
 } from 'native-base';
-import { fetchChats, setCurrentChat } from '../actions/chats';
+import { fetchChats, setCurrentChat, putUserInChat } from '../actions/chats';
+import { setCurrentUser } from '../actions/user';
 
 class ChatsScreen extends React.Component {
     static navigationOptions = {
         header: null
     };
 
+    // Get user info from AsyncStorage and store in redux state
+    getUser = async () => {
+        try {
+            const storedUser = await AsyncStorage.getItem('user');
+            const user = JSON.parse(storedUser); 
+            if (user) {
+                const { id, display_name } = user;
+                return {
+                    id,
+                    display_name
+                };
+            }
+        } catch (error) {
+            console.log(error);
+            return Promise.reject({ message: 'Error getting data' });
+        }
+
+    }
+
     componentDidMount() {
+        if (!this.props.currentUser) {
+            this.getUser().then(user => this.props.setCurrentUser(user));
+        }
+
         this.props.fetchChats();
     }
 
@@ -51,6 +75,9 @@ class ChatsScreen extends React.Component {
                         chatName: item.name,
                         chatId: item.id
                     });
+                    // Chat information needs to be updated after new chat is created
+                    // Need to implement function to concat the new chat, doing inefficient fetch for now
+                    //this.props.fetchChats();
                 }}>
                 <Left>
                     <Text>{item.name}</Text>
@@ -89,6 +116,13 @@ class ChatsScreen extends React.Component {
                                 }>
                                 <Text>Create new chat</Text>
                             </Button>
+                            <Button
+                                style={styles.button}
+                                onPress={() =>
+                                    this.props.putUserInChat(1, 3)
+                                }>
+                                <Text>Add user 3 to chat 1</Text>
+                            </Button>
                             {
                                 <FlatList
                                     data={chats}
@@ -107,15 +141,19 @@ class ChatsScreen extends React.Component {
     }
 }
 
-const mapStateToProps = ({ chatsReducer: { chats } }) => {
+const mapStateToProps = ({ chatsReducer: { chats },
+                           userReducer: { currentUser } }) => {
     return {
-        chats
+        chats,
+        currentUser
     };
 };
 
 const mapDispatchToProps = (dispatch) => ({
     fetchChats: bindActionCreators(fetchChats, dispatch),
-    setCurrentChat: bindActionCreators(setCurrentChat, dispatch)
+    setCurrentChat: bindActionCreators(setCurrentChat, dispatch),
+    setCurrentUser: bindActionCreators(setCurrentUser, dispatch),
+    putUserInChat: bindActionCreators(putUserInChat, dispatch)
 });
 
 const styles = StyleSheet.create({

@@ -39,7 +39,7 @@ class CreateChatScreen extends React.Component {
 
     _submitForm = async () => {
         const { name } = this.state;
-        this.props.putChat(name);
+        this.props.putChat(name); // Send current user info
         this.props.navigation.pop();
     };
 
