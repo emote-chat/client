@@ -20,16 +20,17 @@ const getChats = (data) => {
     };
 };
 
-export const createMessage = (id, cid, message, user, emojis) => {
+const getMessages = (data) => {
+    return {
+        type: types.GET_MESSAGES,
+        payload: data
+    };
+};
+
+export const createMessage = (data) => {
     return {
         type: types.CREATE_MESSAGE,
-        payload: {
-            id,
-            chats_id: cid,
-            message,
-            user,
-            emojis
-        }
+        payload: data
     };
 };
 
@@ -47,6 +48,17 @@ const addReaction = (data) => {
     };
 };
 
+const createUserInChat = (cid, userId, displayName) => {
+    return {
+        type: types.CREATE_USER_IN_CHAT,
+        payload: {
+            cid,
+            userId,
+            displayName
+        }
+    };
+};
+
 export const fetchChats = (data) => {
     return async (dispatch, getState) => {
         const headers = await addAuthHeader();
@@ -56,6 +68,19 @@ export const fetchChats = (data) => {
             .then(handleResponse)
             .then((data) => {
                 dispatch(getChats(data));
+            });
+    };
+};
+
+export const fetchMessagesInChat = (cid) => {
+    return async (dispatch, getState) => {
+        const headers = await addAuthHeader();
+        return fetch(`${baseUrl}chat/${cid}`, {
+            headers
+        })
+            .then(handleResponse)
+            .then((data) => {
+                dispatch(getMessages(data));
             });
     };
 };
@@ -82,6 +107,22 @@ export const putChat = (name) => {
     };
 };
 
+export const putUserInChat = (cid, userId) => {
+    return async (dispatch) => {
+        const addUserId = true;
+        const headers = await addAuthHeader(
+            {
+                'Content-Type': 'application/json',
+                Accept: 'application/json'
+            },
+            addUserId
+        );
+        return fetch(`${baseUrl}chat/${cid}/${userId}`, {
+            method: 'POST'
+        });
+    };
+};
+
 export const createReaction = (messageId, emoji) => {
     return async (dispatch) => {
         const addUserId = true;
@@ -95,11 +136,33 @@ export const createReaction = (messageId, emoji) => {
         return fetch(`${baseUrl}message/${messageId}/add-reaction`, {
             method: 'POST',
             headers,
-            body: JSON.stringify({emoji})
+            body: JSON.stringify({ emoji })
         })
             .then(handleResponse)
             .then((data) => {
                 dispatch(addReaction(data));
+            });
+    };
+};
+
+export const putMessage = (cid, text) => {
+    return async (dispatch) => {
+        const addUserId = true;
+        const headers = await addAuthHeader(
+            {
+                'Content-Type': 'application/json',
+                Accept: 'application/json'
+            },
+            addUserId
+        );
+        return fetch(`${baseUrl}chat/${cid}/message`, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify({ text })
+        })
+            .then(handleResponse)
+            .then((data) => {
+                dispatch(createMessage(data));
             });
     };
 };

@@ -23,6 +23,26 @@ function chatsReducer(state = chatsInitialState, action) {
                 ...state,
                 chats: state.chats.concat(payload)
             };
+        case types.CREATE_USER_IN_CHAT:
+            const { cid, userId, displayName } = payload;
+            const user = {
+                display_name: displayName,
+                id: userId
+            };
+            // Concat user object to the users array of the appropriate Chat object
+            const cidIndex = state.chats.findIndex(
+                (item) => item.id === cid
+            );
+            return {
+                ...state,
+                chats: {
+                    ...state.chats,
+                    [chats[cidIndex].users]: [
+                        ...state.chats[cidIndex].users,
+                        user
+                    ]
+                }
+            };
         default:
             return state;
     }

@@ -1,7 +1,7 @@
 import * as types from '../constants/actionTypes';
 
 const userInitialState = {
-    user: {}
+    currentUser: null
 };
 
 function userReducer(state = userInitialState, action) {
@@ -10,7 +10,7 @@ function userReducer(state = userInitialState, action) {
         case types.SET_CURRENT_USER:
             return {
                 ...state,
-                user: payload
+                currentUser: payload
             };
         default:
             return state;

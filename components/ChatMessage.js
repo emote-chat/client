@@ -1,20 +1,20 @@
 import React from 'react';
 import { StyleSheet } from 'react-native';
-import { Card, Text } from 'native-base';
+import { Text, Card } from 'native-base';
 
 export class ChatMessage extends React.Component {
     render() {
-        const { message, user, isSelf } = this.props;
+        const { message, isSelf, displayName } = this.props;
         return (
             <Card transparent style={styles.content}>
                 <Text style={isSelf ? styles.self : styles.user}>
-                    {user}
+                    {displayName}
                 </Text>
                 <Text
                     style={
                         isSelf ? styles.messageSelf : styles.message
                     }>
-                    {message}
+                    {message.text}
                 </Text>
             </Card>
         );
@@ -23,7 +23,8 @@ export class ChatMessage extends React.Component {
 
 const styles = StyleSheet.create({
     content: {
-        margin: 10
+        margin: 10,
+        padding: 10
     },
     user: {
         textAlign: 'left'
