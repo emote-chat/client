@@ -121,7 +121,6 @@ class ChatScreen extends React.Component {
 
                                     const isOpen =
                                         selectedMessage == mId;
-                                    console.log(message);
                                     const isSelf =
                                         currentUser &&
                                         currentUser.id ==
