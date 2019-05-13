@@ -18,11 +18,19 @@ function messageReducer(state = messageInitialState, action) {
                 ...state,
                 messages: state.messages.concat(payload)
             };
-        case types.ADD_REACTION:
+        case types.ADD_REACTION: {
+            const { messages_id } = payload;
+            const newMessages = state.messages.map((m) => {
+                return m.id == messages_id
+                    ? { ...m, emojis: [payload] }
+                    : m;
+            });
             return {
                 ...state,
-                messages: state.messages.concat(payload)
+                messages: newMessages
             };
+        }
+
         default:
             return state;
     }
