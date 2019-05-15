@@ -16,6 +16,9 @@ export class ChatMessage extends React.Component {
                     }>
                     {message.text}
                 </Text>
+                <CardItem footer style={styles.footer}>
+                    {message.reactions && message.reactions.map((emoji, index) => <Text key={index}>{emoji.emoji}</Text>)}
+                </CardItem>
             </Card>
         );
     }
@@ -25,6 +28,10 @@ const styles = StyleSheet.create({
     content: {
         margin: 10,
         padding: 10
+    },
+    footer: {
+        padding: 0,
+        margin: 0
     },
     user: {
         textAlign: 'left'
