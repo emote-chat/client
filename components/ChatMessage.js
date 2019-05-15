@@ -17,7 +17,10 @@ export class ChatMessage extends React.Component {
                     {message.text}
                 </Text>
                 <CardItem footer style={styles.footer}>
-                    {message.reactions && message.reactions.map((emoji, index) => <Text key={index}>{emoji.emoji}</Text>)}
+                    {message.reactions &&
+                        message.reactions.map((emoji, index) => (
+                            <Text key={index}>{emoji.emoji}</Text>
+                        ))}
                 </CardItem>
             </Card>
         );

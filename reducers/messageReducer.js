@@ -14,7 +14,7 @@ function messageReducer(state = messageInitialState, action) {
                 messages: payload
             };
         case types.CREATE_MESSAGE: {
-            const newMessage = {...payload, reactions: []}
+            const newMessage = { ...payload, reactions: [] };
             return {
                 ...state,
                 messages: state.messages.concat(newMessage)
