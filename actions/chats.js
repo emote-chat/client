@@ -41,10 +41,17 @@ const createChat = (data) => {
     };
 };
 
+const addReaction = (data) => {
+    return {
+        type: types.ADD_REACTION,
+        payload: data
+    };
+};
+
 const createUserInChat = (cid, userId, displayName) => {
     return {
         type: types.CREATE_USER_IN_CHAT,
-        payload: { 
+        payload: {
             cid,
             userId,
             displayName
@@ -112,14 +119,29 @@ export const putUserInChat = (cid, userId) => {
         );
         return fetch(`${baseUrl}chat/${cid}/${userId}`, {
             method: 'POST'
+        });
+    };
+};
+
+export const createReaction = (messageId, emoji) => {
+    return async (dispatch) => {
+        const addUserId = true;
+        const headers = await addAuthHeader(
+            {
+                'Content-Type': 'application/json',
+                Accept: 'application/json'
+            },
+            addUserId
+        );
+        return fetch(`${baseUrl}message/${messageId}/add-reaction`, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify({ emoji })
         })
-        
-        // Returns nothing if successful so need a specific case covering this
-            
-            //.then(handleResponse)
-            //.then((data) => {
-                //dispatch(createUserInChat(cid, userId, displayName));
-           // });
+            .then(handleResponse)
+            .then((data) => {
+                dispatch(addReaction(data));
+            });
     };
 };
 
@@ -141,6 +163,6 @@ export const putMessage = (cid, text) => {
             .then(handleResponse)
             .then((data) => {
                 dispatch(createMessage(data));
-           });
+            });
     };
 };

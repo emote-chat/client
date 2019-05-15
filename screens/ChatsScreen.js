@@ -1,7 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-
 import {
     Platform,
     ScrollView,
@@ -28,7 +27,11 @@ import {
     Item,
     Input
 } from 'native-base';
-import { fetchChats, setCurrentChat, putUserInChat } from '../actions/chats';
+import {
+    fetchChats,
+    setCurrentChat,
+    putUserInChat
+} from '../actions/chats';
 import { setCurrentUser } from '../actions/user';
 
 class ChatsScreen extends React.Component {
@@ -40,7 +43,7 @@ class ChatsScreen extends React.Component {
     getUser = async () => {
         try {
             const storedUser = await AsyncStorage.getItem('user');
-            const user = JSON.parse(storedUser); 
+            const user = JSON.parse(storedUser);
             if (user) {
                 const { id, display_name } = user;
                 return {
@@ -52,12 +55,13 @@ class ChatsScreen extends React.Component {
             console.log(error);
             return Promise.reject({ message: 'Error getting data' });
         }
-
-    }
+    };
 
     componentDidMount() {
         if (!this.props.currentUser) {
-            this.getUser().then(user => this.props.setCurrentUser(user));
+            this.getUser().then((user) =>
+                this.props.setCurrentUser(user)
+            );
         }
 
         this.props.fetchChats();
@@ -141,8 +145,10 @@ class ChatsScreen extends React.Component {
     }
 }
 
-const mapStateToProps = ({ chatsReducer: { chats },
-                           userReducer: { currentUser } }) => {
+const mapStateToProps = ({
+    chatsReducer: { chats },
+    userReducer: { currentUser }
+}) => {
     return {
         chats,
         currentUser

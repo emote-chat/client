@@ -27,10 +27,15 @@ import {
     Item,
     Input
 } from 'native-base';
-import { fetchMessagesInChat, putMessage } from '../actions/chats';
-import { WebBrowser } from 'expo';
+
+import {
+    fetchMessagesInChat,
+    putMessage,
+    createReaction
+} from '../actions/chats';
 
 import { ChatMessage } from '../components/ChatMessage';
+import { EmojiMenu } from '../components/EmojiMenu';
 
 class ChatScreen extends React.Component {
     static navigationOptions = {
@@ -38,29 +43,40 @@ class ChatScreen extends React.Component {
     };
 
     state = {
+        selectedMessage: null,
         inputText: ''
     };
+
+    componentDidMount() {
+        const cid = this.props.navigation.getParam('chatId');
+        this.props.fetchMessagesInChat(cid);
+    }
 
     // Send message form
     _submitForm = () => {
         const { inputText } = this.state;
-        const cid = this.props.navigation.getParam('chatId')
+        const cid = this.props.navigation.getParam('chatId');
         this.props.putMessage(cid, inputText);
+        this.setState({ inputText: '' });
     };
 
-    componentDidMount() {
-        const cid = this.props.navigation.getParam('chatId')
-        this.props.fetchMessagesInChat(cid);
-    }
-
     render() {
-        const { navigation, messages } = this.props;
-        const { currentUser } = this.props;
+        const {
+            navigation,
+            currentUser,
+            messages,
+            currentChat
+        } = this.props;
+        const {
+            emojiMenuOpen,
+            inputText,
+            selectedMessage
+        } = this.state;
         const chatId = navigation.getParam('chatId');
         return (
             <View style={styles.container}>
                 <ScrollView
-                    style={styles.container}
+                    style={styles.chatContainer}
                     contentContainerStyle={styles.contentContainer}>
                     <Container>
                         <Header>
@@ -83,23 +99,65 @@ class ChatScreen extends React.Component {
                         </Header>
                         <Content>
                             {messages &&
-                                messages.map(
-                                    ({
-                                        text,
-                                        id,
-                                        users_id,
-                                        created_at
-                                    }) => (
-                                        <ChatMessage
-                                            text={text}
-                                            key={id}
-                                            userId={users_id}
-                                            currentUserId={currentUser.id}
-                                            currentUserName={currentUser.display_name}
-                                            createdTimestamp={created_at}
-                                        />
-                                    )
-                                )}
+                                messages.map((message) => {
+                                    const mId = message.id;
+                                    const _handleLongPress = () => {
+                                        this.setState({
+                                            selectedMessage: mId
+                                        });
+                                    };
+
+                                    const handleEmojiClick = (
+                                        emoji
+                                    ) => {
+                                        this.props.createReaction(
+                                            mId,
+                                            emoji
+                                        );
+                                        this.setState({
+                                            selectedMessage: null
+                                        });
+                                    };
+
+                                    const isOpen =
+                                        selectedMessage == mId;
+                                    const isSelf =
+                                        currentUser &&
+                                        currentUser.id ==
+                                            message.users_id;
+                                    const user =
+                                        currentChat &&
+                                        currentChat.users.find(
+                                            ({ id }) =>
+                                                id == message.users_id
+                                        );
+                                    const displayName =
+                                        user && user.display_name;
+
+                                    return (
+                                        <TouchableOpacity
+                                            key={mId}
+                                            onLongPress={
+                                                _handleLongPress
+                                            }>
+                                            <ChatMessage
+                                                key={mId}
+                                                message={message}
+                                                isSelf={isSelf}
+                                                displayName={
+                                                    displayName
+                                                }
+                                            />
+                                            {isOpen && (
+                                                <EmojiMenu
+                                                    onClick={
+                                                        handleEmojiClick
+                                                    }
+                                                />
+                                            )}
+                                        </TouchableOpacity>
+                                    );
+                                })}
                         </Content>
                     </Container>
                 </ScrollView>
@@ -113,12 +171,14 @@ class ChatScreen extends React.Component {
                     behavior="position">
                     <Form style={styles.content}>
                         <Item style={styles.chatInput} regular>
-                            <Input placeholder="Type your message here!"
+                            <Input
+                                placeholder="Type your message here!"
+                                value={inputText}
                                 onChangeText={(inputText) =>
-                                this.setState({ inputText })
+                                    this.setState({ inputText })
                                 }
                             />
-                            <Button 
+                            <Button
                                 style={styles.chatButton}
                                 onPress={this._submitForm}>
                                 <Text>Send</Text>
@@ -131,26 +191,36 @@ class ChatScreen extends React.Component {
     }
 }
 
-function mapStateToProps({ chatsReducer: { currentChat },
-                           userReducer: { currentUser },
-                           messageReducer: { messages } }) {
+function mapStateToProps({
+    chatsReducer: { currentChat },
+    userReducer: { currentUser },
+    messageReducer: { messages }
+}) {
     return {
-        currentChat, 
+        currentChat,
         currentUser,
         messages
     };
 }
 
 const mapDispatchToProps = (dispatch) => ({
-    fetchMessagesInChat: bindActionCreators(fetchMessagesInChat, dispatch),
+    fetchMessagesInChat: bindActionCreators(
+        fetchMessagesInChat,
+        dispatch
+    ),
+    createReaction: bindActionCreators(createReaction, dispatch),
     putMessage: bindActionCreators(putMessage, dispatch)
 });
-
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#fff'
+    },
+    chatContainer: {
+        flex: 1,
+        backgroundColor: '#fff',
+        marginBottom: 70
     },
     chatButton: {
         top: 3

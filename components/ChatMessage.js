@@ -1,30 +1,30 @@
 import React from 'react';
-import { Text, StyleSheet } from 'react-native';
-import { Content } from 'native-base';
+import { StyleSheet } from 'react-native';
+import { Text, Card } from 'native-base';
 
 export class ChatMessage extends React.Component {
     render() {
-        const { text, userId, createdTimestamp, currentUserId, currentUserName } = this.props;
-        // Need to fetch display name for users other than self, which will involve the restructuring of the chats/messages state, put the below just as a placeholder
+        const { message, isSelf, displayName } = this.props;
         return (
-            <Content style={styles.content}>
-                <Text style={userId === currentUserId ? styles.self : styles.user}>
-                    {userId === currentUserId ? currentUserName : userId}
+            <Card transparent style={styles.content}>
+                <Text style={isSelf ? styles.self : styles.user}>
+                    {displayName}
                 </Text>
                 <Text
                     style={
-                       userId === currentUserId ? styles.messageSelf : styles.message
+                        isSelf ? styles.messageSelf : styles.message
                     }>
-                    {text}
+                    {message.text}
                 </Text>
-            </Content>
+            </Card>
         );
     }
 }
 
 const styles = StyleSheet.create({
     content: {
-        margin: 10
+        margin: 10,
+        padding: 10
     },
     user: {
         textAlign: 'left'
