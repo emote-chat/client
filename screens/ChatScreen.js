@@ -147,6 +147,10 @@ class ChatScreen extends React.Component {
                                                 displayName={
                                                     displayName
                                                 }
+                                                users={
+                                                    currentChat &&
+                                                    currentChat.users
+                                                }
                                             />
                                             {isOpen && (
                                                 <EmojiMenu

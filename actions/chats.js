@@ -136,7 +136,7 @@ export const createReaction = (messageId, emoji) => {
             },
             addUserId
         );
-        return fetch(`${baseUrl}message/${messageId}/add-reaction`, {
+        return fetch(`${baseUrl}message/${messageId}/reaction`, {
             method: 'POST',
             headers,
             body: JSON.stringify({ emoji })

@@ -1,10 +1,17 @@
 import React from 'react';
-import { StyleSheet } from 'react-native';
-import { Text, Card } from 'native-base';
+import { StyleSheet, View } from 'react-native';
+import { Text, Card, CardItem } from 'native-base';
 
 export class ChatMessage extends React.Component {
+    state = {
+        currentEmojiSelected: null
+    };
+
+    _handleKeyPress = (id) =>
+        this.setState({ currentEmojiSelected: id });
+
     render() {
-        const { message, isSelf, displayName } = this.props;
+        const { message, isSelf, displayName, users } = this.props;
         return (
             <Card transparent style={styles.content}>
                 <Text style={isSelf ? styles.self : styles.user}>
@@ -18,9 +25,30 @@ export class ChatMessage extends React.Component {
                 </Text>
                 <CardItem footer style={styles.footer}>
                     {message.reactions &&
-                        message.reactions.map((emoji, index) => (
-                            <Text key={index}>{emoji.emoji}</Text>
-                        ))}
+                        message.reactions.map(
+                            ({ emoji, users_id }, index) => {
+                                const onPress = () =>
+                                    this._handleKeyPress(emoji);
+                                const reactionUser = users.find(
+                                    (u) => u.id === users_id
+                                );
+                                return (
+                                    <View key={index}>
+                                        <Text onPress={onPress}>
+                                            {this.state
+                                                .currentEmojiSelected !==
+                                            emoji
+                                                ? emoji
+                                                : reactionUser
+                                                    ? `${emoji}: ${
+                                                          reactionUser.display_name
+                                                      }`
+                                                    : ''}
+                                        </Text>
+                                    </View>
+                                );
+                            }
+                        )}
                 </CardItem>
             </Card>
         );
@@ -29,7 +57,6 @@ export class ChatMessage extends React.Component {
 
 const styles = StyleSheet.create({
     content: {
-        margin: 10,
         padding: 10
     },
     footer: {

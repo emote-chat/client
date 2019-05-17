@@ -23,7 +23,6 @@ export class EmojiMenu extends React.Component {
 
 const styles = StyleSheet.create({
     content: {
-        marginTop: 10,
         padding: 10,
         textAlign: 'center'
     }
