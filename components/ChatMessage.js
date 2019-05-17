@@ -8,7 +8,10 @@ export class ChatMessage extends React.Component {
     };
 
     _handleKeyPress = (id) =>
-        this.setState({ currentEmojiSelected: id });
+        this.setState(({ currentEmojiSelected }) => ({
+            currentEmojiSelected:
+                currentEmojiSelected === id ? null : id
+        }));
 
     render() {
         const { message, isSelf, displayName, users } = this.props;
@@ -57,7 +60,8 @@ export class ChatMessage extends React.Component {
 
 const styles = StyleSheet.create({
     content: {
-        padding: 10
+        padding: 10,
+        margin: 10
     },
     footer: {
         padding: 0,
