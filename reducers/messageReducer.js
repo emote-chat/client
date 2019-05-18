@@ -13,13 +13,11 @@ function messageReducer(state = messageInitialState, action) {
                 ...state,
                 messages: payload
             };
-        case types.CREATE_MESSAGE: {
-            const newMessage = { ...payload, reactions: [] };
+        case types.CREATE_MESSAGE:
             return {
                 ...state,
-                messages: state.messages.concat(newMessage)
+                messages: state.messages.concat(payload)
             };
-        }
         case types.ADD_REACTION: {
             const { messages_id } = payload;
             const newMessages = state.messages.map((m) => {
