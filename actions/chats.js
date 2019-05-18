@@ -68,7 +68,8 @@ export const fetchChats = (data) => {
             .then(handleResponse)
             .then((data) => {
                 dispatch(getChats(data));
-            });
+            })
+            .catch((error) => console.log('Error:', error));
     };
 };
 
@@ -81,7 +82,8 @@ export const fetchMessagesInChat = (cid) => {
             .then(handleResponse)
             .then((data) => {
                 dispatch(getMessages(data));
-            });
+            })
+            .catch((error) => console.log('Error:', error));
     };
 };
 
@@ -103,7 +105,8 @@ export const putChat = (name) => {
             .then(handleResponse)
             .then((data) => {
                 dispatch(createChat(data));
-            });
+            })
+            .catch((error) => console.log('Error:', error));
     };
 };
 
@@ -133,7 +136,7 @@ export const createReaction = (messageId, emoji) => {
             },
             addUserId
         );
-        return fetch(`${baseUrl}message/${messageId}/add-reaction`, {
+        return fetch(`${baseUrl}message/${messageId}/reaction`, {
             method: 'POST',
             headers,
             body: JSON.stringify({ emoji })
@@ -141,7 +144,8 @@ export const createReaction = (messageId, emoji) => {
             .then(handleResponse)
             .then((data) => {
                 dispatch(addReaction(data));
-            });
+            })
+            .catch((error) => console.log('Error:', error));
     };
 };
 
@@ -163,6 +167,7 @@ export const putMessage = (cid, text) => {
             .then(handleResponse)
             .then((data) => {
                 dispatch(createMessage(data));
-            });
+            })
+            .catch((error) => console.log('Error:', error));
     };
 };

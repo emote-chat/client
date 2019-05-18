@@ -22,7 +22,7 @@ function messageReducer(state = messageInitialState, action) {
             const { messages_id } = payload;
             const newMessages = state.messages.map((m) => {
                 return m.id == messages_id
-                    ? { ...m, emojis: [payload] }
+                    ? { ...m, reactions: [...m.reactions, payload] }
                     : m;
             });
             return {
