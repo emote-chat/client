@@ -95,7 +95,16 @@ class ChatScreen extends React.Component {
                                     {navigation.getParam('chatName')}
                                 </Title>
                             </Body>
-                            <Right />
+                            <Right>
+                                <Button
+                                    onPress={() =>
+                                        this.props.navigation.navigate('AddUserToChat', {
+                                            chatId: currentChat.id
+                                        })
+                                    }>
+                                    <Text>Add user</Text>
+                                </Button>
+                            </Right>
                         </Header>
                         <Content>
                             {messages &&
