@@ -6,7 +6,8 @@
     "ios": "expo start --ios",
     "eject": "expo eject",
     "test": "jest",
-    "prettier": "prettier \"*/**/*.js\" --ignore-path ./.prettierignore --write"
+    "prettier": "prettier \"*/**/*.js\" --ignore-path ./.prettierignore --write",
+    "devtools": "react-devtools"
   },
   "repository": {
     "type": "git",
@@ -31,7 +32,8 @@
     "babel-jest": "^24.7.1",
     "babel-preset-expo": "^5.0.0",
     "jest": "^24.7.1",
-    "jest-expo": "^32.0.0"
+    "jest-expo": "^32.0.0",
+    "react-devtools": "^3.6.1"
   },
   "private": true
 }
