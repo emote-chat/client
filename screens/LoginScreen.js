@@ -80,6 +80,8 @@ class LoginScreen extends React.Component {
                         <Item stackedLabel>
                             <Label>Email</Label>
                             <Input
+                                autoCapitalize='none'
+                                keyboardType='email-address'
                                 onChangeText={(email) =>
                                     this.setState({ email })
                                 }
