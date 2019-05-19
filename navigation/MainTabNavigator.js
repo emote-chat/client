@@ -9,12 +9,14 @@ import TabBarIcon from '../components/TabBarIcon';
 import ChatsScreen from '../screens/ChatsScreen';
 import ChatScreen from '../screens/ChatScreen';
 import CreateChatScreen from '../screens/CreateChatScreen';
+import AddUserToChatScreen from '../screens/AddUserToChatScreen';
 import SettingsScreen from '../screens/SettingsScreen';
 
 const ChatsStack = createStackNavigator({
     Chats: ChatsScreen,
     Chat: ChatScreen,
-    CreateChat: CreateChatScreen
+    CreateChat: CreateChatScreen,
+    AddUserToChat: AddUserToChatScreen
 });
 
 ChatsStack.navigationOptions = {

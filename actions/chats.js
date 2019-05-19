@@ -48,14 +48,10 @@ const addReaction = (data) => {
     };
 };
 
-const createUserInChat = (cid, userId, displayName) => {
+const createUserInChat = (data) => {
     return {
         type: types.CREATE_USER_IN_CHAT,
-        payload: {
-            cid,
-            userId,
-            displayName
-        }
+        payload: data
     };
 };
 
@@ -111,18 +107,18 @@ export const putChat = (name) => {
 };
 
 export const putUserInChat = (cid, userId) => {
-    return async (dispatch) => {
-        const addUserId = true;
-        const headers = await addAuthHeader(
-            {
-                'Content-Type': 'application/json',
-                Accept: 'application/json'
-            },
-            addUserId
-        );
+    return async (dispatch, getState) => {
+        const headers = await addAuthHeader();
         return fetch(`${baseUrl}chat/${cid}/${userId}`, {
-            method: 'POST'
-        });
+            method: 'POST',
+            headers
+        })
+            .then(handleResponse)
+            .then((data) => {
+                // add chat id to payload
+                data.cid = cid;
+                dispatch(createUserInChat(data));
+            });
     };
 };
 

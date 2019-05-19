@@ -30,7 +30,6 @@ import {
 import {
     fetchChats,
     setCurrentChat,
-    putUserInChat
 } from '../actions/chats';
 import { setCurrentUser } from '../actions/user';
 
@@ -79,9 +78,6 @@ class ChatsScreen extends React.Component {
                         chatName: item.name,
                         chatId: item.id
                     });
-                    // Chat information needs to be updated after new chat is created
-                    // Need to implement function to concat the new chat, doing inefficient fetch for now
-                    //this.props.fetchChats();
                 }}>
                 <Left>
                     <Text>{item.name}</Text>
@@ -114,18 +110,11 @@ class ChatsScreen extends React.Component {
                         </Header>
                         <Content>
                             <Button
-                                style={styles.button}
+                                style={styles.chatButton}
                                 onPress={() =>
                                     navigation.navigate('CreateChat')
                                 }>
                                 <Text>Create new chat</Text>
-                            </Button>
-                            <Button
-                                style={styles.button}
-                                onPress={() =>
-                                    this.props.putUserInChat(1, 3)
-                                }>
-                                <Text>Add user 3 to chat 1</Text>
                             </Button>
                             {
                                 <FlatList
@@ -158,8 +147,7 @@ const mapStateToProps = ({
 const mapDispatchToProps = (dispatch) => ({
     fetchChats: bindActionCreators(fetchChats, dispatch),
     setCurrentChat: bindActionCreators(setCurrentChat, dispatch),
-    setCurrentUser: bindActionCreators(setCurrentUser, dispatch),
-    putUserInChat: bindActionCreators(putUserInChat, dispatch)
+    setCurrentUser: bindActionCreators(setCurrentUser, dispatch)
 });
 
 const styles = StyleSheet.create({

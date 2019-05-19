@@ -2,7 +2,8 @@ import * as types from '../constants/actionTypes';
 
 const chatsInitialState = {
     currentChat: null,
-    chats: []
+    chats: [],
+    addedUser: null
 };
 
 function chatsReducer(state = chatsInitialState, action) {
@@ -24,17 +25,19 @@ function chatsReducer(state = chatsInitialState, action) {
                 chats: state.chats.concat(payload)
             };
         case types.CREATE_USER_IN_CHAT:
-            const { cid, userId, displayName } = payload;
+            const { id, display_name: displayName, cid } = payload;
+            const { chats } = state;
             const user = {
-                display_name: displayName,
-                id: userId
+                id,
+                displayName
             };
-            // Concat user object to the users array of the appropriate Chat object
-            const cidIndex = state.chats.findIndex(
+            // Concat user object to the users array of assoc. chat
+            const cidIndex = chats.findIndex(
                 (item) => item.id === cid
             );
             return {
                 ...state,
+                addedUser: user,
                 chats: {
                     ...state.chats,
                     [chats[cidIndex].users]: [
