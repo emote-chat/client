@@ -101,9 +101,15 @@ class AddUserToChatScreen extends React.Component {
     };
 
     componentDidUpdate(prevProps) {
-        // if adding user successful, navigate back to chat
+        // if adding user successful, display toast and navigate back to chat
         if (prevProps.addedUser !== this.props.addedUser) {
-            this.props.navigation.navigate('Chat');
+            Toast.show({
+                text: `${this.props.addedUser.displayName} added to chat`,
+                buttonText: "Okay",
+                type: "success",
+                duration: 1000,
+                onClose: () => this.props.navigation.navigate('Chat')
+            });
         }
     }
 
