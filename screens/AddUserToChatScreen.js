@@ -38,6 +38,8 @@ import {
     addAuthHeader
 } from '../helpers/api';
 
+import { ErrorMessage } from '../components/ErrorMessage';
+
 const AddUserForm = ({ addUserToChat, cid: chatId, user }) => {
     const { 
         id: userId, 
@@ -68,10 +70,15 @@ class AddUserToChatScreen extends React.Component {
     state = {
         email: '',
         foundUser: null,
-        error: ''
+        errorMessage: ''
     };
 
     _submitForm = async () => {
+        // clear previous error message
+        this.setState({
+            errorMessage: ''
+        });
+        
         const { email } = this.state;
         const headers = await addAuthHeader();
         return fetch(`${baseUrl}user/${email}`, {
@@ -79,19 +86,22 @@ class AddUserToChatScreen extends React.Component {
         })
             .then(handleResponse)
             .then((data) => {
+                // if successful, clear email and update foundUser
                 this.setState({
                     foundUser: data,
                     email: ''
                 });
             })
             .catch(({ message }) => {
+                // if error, update error message
                 this.setState({
-                    error: message
+                    errorMessage: message
                 });
             });
     };
 
-    componentDidUpdate(prevProps, prevState, snapshot) {
+    componentDidUpdate(prevProps) {
+        // if adding user successful, navigate back to chat
         if (prevProps.addedUser !== this.props.addedUser) {
             this.props.navigation.navigate('Chat');
         }
@@ -99,7 +109,7 @@ class AddUserToChatScreen extends React.Component {
 
     render() {
         const { navigation, putUserInChat } = this.props;
-        const { foundUser, email, error } = this.state;
+        const { foundUser, email, errorMessage } = this.state;
         return (
             <View style={styles.container}>
                 <ScrollView
@@ -144,7 +154,7 @@ class AddUserToChatScreen extends React.Component {
                                     <Text>Search</Text>
                                 </Button>
                             </Form>
-                            { error ? <Text>{ error }</Text> : null }
+                            <ErrorMessage message={errorMessage} />
                             {
                                 foundUser ? 
                                 <AddUserForm 
