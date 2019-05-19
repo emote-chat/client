@@ -26,26 +26,31 @@ function chatsReducer(state = chatsInitialState, action) {
             };
         case types.CREATE_USER_IN_CHAT:
             const { id, display_name: displayName, cid } = payload;
-            const { chats } = state;
             const user = {
                 id,
                 displayName
             };
-            // Concat user object to the users array of assoc. chat
-            const cidIndex = chats.findIndex(
-                (item) => item.id === cid
+            const cidIndex = state.chats.findIndex(
+                (chat) => chat.id === cid
             );
             return {
                 ...state,
                 addedUser: user,
                 chats: {
                     ...state.chats,
-                    [chats[cidIndex].users]: [
+                    [state.chats[cidIndex].users]: [
                         ...state.chats[cidIndex].users,
                         user
                     ]
                 }
             };
+        case types.DELETE_USER_FROM_CHAT:
+            return {
+                ...state,
+                chats: state.chats.filter(
+                    (chat) => chat.id !== payload.cid
+                )
+            }
         default:
             return state;
     }
