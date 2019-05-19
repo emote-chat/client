@@ -96,13 +96,13 @@ class ChatScreen extends React.Component {
                                 </Title>
                             </Body>
                             <Right>
-                                <Button
+                                <Button transparent
                                     onPress={() =>
                                         this.props.navigation.navigate('AddUserToChat', {
                                             chatId: currentChat.id
                                         })
                                     }>
-                                    <Text>Add user</Text>
+                                    <Icon name="person-add" />
                                 </Button>
                             </Right>
                         </Header>
