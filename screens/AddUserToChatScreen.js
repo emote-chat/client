@@ -31,23 +31,32 @@ import {
 } from 'native-base';
 
 import { baseUrl } from '../constants/api';
+
+import { putUserInChat } from '../actions/chats';
 import {
     handleResponse,
     addAuthHeader
 } from '../helpers/api';
 
-import { putUserInChat } from '../actions/chats';
-
-const AddUserForm = ({ cid, user }) => {
+const AddUserForm = ({ addUserToChat, cid: chatId, user }) => {
+    const { 
+        id: userId, 
+        display_name: displayName
+    } = user;
     return (
-        <Container style={styles.contentContainer}>
-            <Text>
-                { user }
-            </Text>
-            <Button onPress={putUserInChat(cid, user)}>
-                <Text>Add User To Chat</Text>
+        <Form style={styles.contentContainer}>
+            <Item stackedLabel>
+                <Label>User display name</Label>
+                <Text>
+                    { displayName }
+                </Text>
+            </Item>
+            <Button 
+                full
+                onPress={() => addUserToChat(chatId, userId)}>
+                <Text>Add To Chat</Text>
             </Button>
-        </Container>
+        </Form>
     );
 }
 
@@ -58,7 +67,8 @@ class AddUserToChatScreen extends React.Component {
 
     state = {
         email: '',
-        foundUser: ''
+        foundUser: null,
+        error: ''
     };
 
     _submitForm = async () => {
@@ -69,23 +79,27 @@ class AddUserToChatScreen extends React.Component {
         })
             .then(handleResponse)
             .then((data) => {
-                const { id } = data;
                 this.setState({
-                    foundUser: id.toString()
-                });
-                
-                this.setState({
+                    foundUser: data,
                     email: ''
                 });
             })
-            .catch((error) => {
-                console.error(error);
+            .catch(({ message }) => {
+                this.setState({
+                    error: message
+                });
             });
     };
 
+    componentDidUpdate(prevProps, prevState, snapshot) {
+        if (prevProps.addedUser !== this.props.addedUser) {
+            this.props.navigation.navigate('Chat');
+        }
+    }
+
     render() {
-        const { navigation } = this.props;
-        const { foundUser, email } = this.state;
+        const { navigation, putUserInChat } = this.props;
+        const { foundUser, email, error } = this.state;
         return (
             <View style={styles.container}>
                 <ScrollView
@@ -130,13 +144,14 @@ class AddUserToChatScreen extends React.Component {
                                     <Text>Search</Text>
                                 </Button>
                             </Form>
+                            { error ? <Text>{ error }</Text> : null }
                             {
-                                foundUser.length ? 
+                                foundUser ? 
                                 <AddUserForm 
+                                    addUserToChat={putUserInChat}
                                     cid={navigation.getParam('chatId')}
                                     user={foundUser} 
-                                />
-                                : null
+                                /> : null
                             }
                         </Content>
                     </Container>
@@ -147,10 +162,10 @@ class AddUserToChatScreen extends React.Component {
 }
 
 const mapStateToProps = ({
-    userReducer: { currentUser }
+    chatsReducer: { addedUser }
 }) => {
     return {
-        currentUser
+        addedUser
     };
 };
 
