@@ -5,7 +5,8 @@ import {
     StyleSheet,
     TouchableOpacity,
     View,
-    KeyboardAvoidingView
+    KeyboardAvoidingView,
+    Alert
 } from 'react-native';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
@@ -31,7 +32,8 @@ import {
 import {
     fetchMessagesInChat,
     putMessage,
-    createReaction
+    createReaction,
+    removeUserFromChat
 } from '../actions/chats';
 
 import { ChatMessage } from '../components/ChatMessage';
@@ -52,6 +54,18 @@ class ChatScreen extends React.Component {
         this.props.fetchMessagesInChat(cid);
     }
 
+    componentDidUpdate() {
+        if (!this.props.currentChat.users.some(user => user.id === currentUser.id)) {
+            Toast.show({
+                text: `${this.props.currentUser.displayName}, you have left ${currentChat.name}`,
+                buttonText: "Okay",
+                type: "success",
+                duration: 1000,
+                onClose: () => this.props.navigation.navigate('Chats')
+            });
+        }
+    }
+
     // Send message form
     _submitForm = () => {
         const { inputText } = this.state;
@@ -60,19 +74,35 @@ class ChatScreen extends React.Component {
         this.setState({ inputText: '' });
     };
 
+    _confirmLeavingChat = () => {
+        const { currentChat, currentUser } = this.props;
+        Alert.alert(
+            `Leaving chat ${navigation.getParam('chatName')}`,
+            'Are you sure you want to leave?',
+            [
+                {
+                    text: 'Cancel',
+                    onPress: () => console.log('Cancel Pressed'),
+                    style: 'cancel',
+                },
+                { text: 'OK', onPress: () => removeUserFromChat(currentChat.id, currentUser.id) },
+            ]
+        );
+    }
+
     render() {
         const {
             navigation,
             currentUser,
             messages,
-            currentChat
+            currentChat,
+            removeUserFromChat
         } = this.props;
         const {
             emojiMenuOpen,
             inputText,
             selectedMessage
         } = this.state;
-        const chatId = navigation.getParam('chatId');
         return (
             <View style={styles.container}>
                 <ScrollView
@@ -221,6 +251,7 @@ const mapDispatchToProps = (dispatch) => ({
         fetchMessagesInChat,
         dispatch
     ),
+    removeUserFromChat: bindActionCreators(removeUserFromChat, dispatch),
     createReaction: bindActionCreators(createReaction, dispatch),
     putMessage: bindActionCreators(putMessage, dispatch)
 });
@@ -267,6 +298,9 @@ const styles = StyleSheet.create({
         textAlign: 'center'
     },
     navigationFilename: {
+        marginTop: 5
+    },
+    materialIcon: {
         marginTop: 5
     }
 });
