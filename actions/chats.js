@@ -115,6 +115,8 @@ export const putUserInChat = (cid, userId) => {
         })
             .then(handleResponse)
             .then((data) => {
+                // add chat id to payload
+                data.cid = cid;
                 dispatch(createUserInChat(data));
             });
     };
