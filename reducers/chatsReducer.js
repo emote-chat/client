@@ -49,18 +49,16 @@ function chatsReducer(state = chatsInitialState, action) {
             return {
                 ...state,
                 addedUser: user,
-                chats: [
-                    ...state.chats.slice(0, cidIndex),
-                    updatedChat,
-                    ...state.chats.slice(cidIndex + 1)
-                ]
+                chats: state.chats.map(
+                    (chat, i) => i === cidIndex ? updatedChat : chat
+                )
             };
 
         case types.DELETE_USER_FROM_CHAT:
             return {
                 ...state,
                 chats: state.chats.filter(
-                    (chat) => chat.id !== payload.cid
+                    (chat) => chat.id !== payload
                 )
             }
 
