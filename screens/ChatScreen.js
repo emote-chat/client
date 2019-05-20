@@ -5,7 +5,8 @@ import {
     StyleSheet,
     TouchableOpacity,
     View,
-    KeyboardAvoidingView
+    KeyboardAvoidingView,
+    Alert
 } from 'react-native';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
@@ -25,13 +26,16 @@ import {
     List,
     ListItem,
     Item,
-    Input
+    Input,
+    Toast
 } from 'native-base';
+import { Icon as MaterialIcon } from 'react-native-elements';
 
 import {
     fetchMessagesInChat,
     putMessage,
-    createReaction
+    createReaction,
+    removeUserFromChat
 } from '../actions/chats';
 
 import { ChatMessage } from '../components/ChatMessage';
@@ -52,13 +56,45 @@ class ChatScreen extends React.Component {
         this.props.fetchMessagesInChat(cid);
     }
 
+    componentDidUpdate(prevProps) {
+        const { chats, currentChat, currentUser, navigation } = this.props;
+        const { display_name: displayName } = currentUser;
+        if (prevProps.chats !== chats) {
+            Toast.show({
+                text: `${displayName}, you have left ${currentChat.name}`,
+                buttonText: "Okay",
+                type: "success",
+                duration: 2000,
+                onClose: () => navigation.navigate('Chats')
+            });
+        }
+    }
+
     // Send message form
-    _submitForm = () => {
+    submitForm = () => {
         const { inputText } = this.state;
         const cid = this.props.navigation.getParam('chatId');
         this.props.putMessage(cid, inputText);
         this.setState({ inputText: '' });
     };
+
+    confirmLeavingChat = () => {
+        const { currentChat, currentUser, navigation, removeUserFromChat } = this.props;
+        Alert.alert(
+            `Leaving chat ${navigation.getParam('chatName')}`,
+            'Are you sure you want to leave?',
+            [
+                {
+                    text: 'Cancel',
+                    style: 'cancel',
+                },
+                { 
+                    text: 'OK', 
+                    onPress: () => removeUserFromChat(currentChat.id, currentUser.id) 
+                }
+            ]
+        );
+    }
 
     render() {
         const {
@@ -72,7 +108,6 @@ class ChatScreen extends React.Component {
             inputText,
             selectedMessage
         } = this.state;
-        const chatId = navigation.getParam('chatId');
         return (
             <View style={styles.container}>
                 <ScrollView
@@ -96,13 +131,24 @@ class ChatScreen extends React.Component {
                                 </Title>
                             </Body>
                             <Right>
-                                <Button transparent
+                                <Button 
+                                    transparent
                                     onPress={() =>
                                         this.props.navigation.navigate('AddUserToChat', {
                                             chatId: currentChat.id
                                         })
                                     }>
                                     <Icon name="person-add" />
+                                </Button>
+                                <Button
+                                    transparent
+                                    onPress={this.confirmLeavingChat}>
+                                    <MaterialIcon 
+                                        name="logout"
+                                        type="material-community"
+                                        color="red"
+                                        iconStyle={styles.materialIcon} 
+                                    />
                                 </Button>
                             </Right>
                         </Header>
@@ -193,7 +239,7 @@ class ChatScreen extends React.Component {
                             />
                             <Button
                                 style={styles.chatButton}
-                                onPress={this._submitForm}>
+                                onPress={this.submitForm}>
                                 <Text>Send</Text>
                             </Button>
                         </Item>
@@ -205,11 +251,12 @@ class ChatScreen extends React.Component {
 }
 
 function mapStateToProps({
-    chatsReducer: { currentChat },
+    chatsReducer: { currentChat, chats },
     userReducer: { currentUser },
     messageReducer: { messages }
 }) {
     return {
+        chats,
         currentChat,
         currentUser,
         messages
@@ -221,6 +268,7 @@ const mapDispatchToProps = (dispatch) => ({
         fetchMessagesInChat,
         dispatch
     ),
+    removeUserFromChat: bindActionCreators(removeUserFromChat, dispatch),
     createReaction: bindActionCreators(createReaction, dispatch),
     putMessage: bindActionCreators(putMessage, dispatch)
 });
@@ -267,6 +315,9 @@ const styles = StyleSheet.create({
         textAlign: 'center'
     },
     navigationFilename: {
+        marginTop: 5
+    },
+    materialIcon: {
         marginTop: 5
     }
 });

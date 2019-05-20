@@ -55,6 +55,13 @@ const createUserInChat = (data) => {
     };
 };
 
+const deleteUserFromChat = (data) => {
+    return {
+        type: types.DELETE_USER_FROM_CHAT,
+        payload: data
+    };
+};
+
 export const fetchChats = (data) => {
     return async (dispatch, getState) => {
         const headers = await addAuthHeader();
@@ -106,10 +113,10 @@ export const putChat = (name) => {
     };
 };
 
-export const putUserInChat = (cid, userId) => {
-    return async (dispatch, getState) => {
+export const putUserInChat = (cid, uid) => {
+    return async (dispatch) => {
         const headers = await addAuthHeader();
-        return fetch(`${baseUrl}chat/${cid}/${userId}`, {
+        return fetch(`${baseUrl}chat/${cid}/${uid}`, {
             method: 'POST',
             headers
         })
@@ -118,6 +125,20 @@ export const putUserInChat = (cid, userId) => {
                 // add chat id to payload
                 data.cid = cid;
                 dispatch(createUserInChat(data));
+            });
+    };
+};
+
+export const removeUserFromChat = (cid, uid) => {
+    return async (dispatch) => {
+        const headers = await addAuthHeader();
+        return fetch(`${baseUrl}chat/${cid}/${uid}`, {
+            method: 'DELETE',
+            headers
+        })
+            .then(handleResponse)
+            .then(({ chats_id: cid }) => {
+                dispatch(deleteUserFromChat(cid));
             });
     };
 };
