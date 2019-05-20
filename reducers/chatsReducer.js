@@ -49,10 +49,11 @@ function chatsReducer(state = chatsInitialState, action) {
             return {
                 ...state,
                 addedUser: user,
-                chats: {
-                    ...state.chats,
-                    [cidIndex]: updatedChat
-                }
+                chats: [
+                    ...state.chats.slice(0, cidIndex),
+                    updatedChat,
+                    ...state.chats.slice(cidIndex + 1)
+                ]
             };
 
         case types.DELETE_USER_FROM_CHAT:
