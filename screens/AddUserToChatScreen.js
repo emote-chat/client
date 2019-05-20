@@ -107,7 +107,7 @@ class AddUserToChatScreen extends React.Component {
                 text: `${this.props.addedUser.displayName} added to chat`,
                 buttonText: "Okay",
                 type: "success",
-                duration: 1000,
+                duration: 2000,
                 onClose: () => this.props.navigation.navigate('Chat')
             });
         }

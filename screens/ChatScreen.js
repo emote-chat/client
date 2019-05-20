@@ -64,7 +64,7 @@ class ChatScreen extends React.Component {
                 text: `${displayName}, you have left ${currentChat.name}`,
                 buttonText: "Okay",
                 type: "success",
-                duration: 1000,
+                duration: 2000,
                 onClose: () => navigation.navigate('Chats')
             });
         }
