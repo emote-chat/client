@@ -137,12 +137,8 @@ export const removeUserFromChat = (cid, uid) => {
             headers
         })
             .then(handleResponse)
-            .then(({ chats_id: cid, users_id: uid }) => {
-                const data = {
-                    cid, 
-                    uid
-                }
-                dispatch(deleteUserFromChat(data));
+            .then(({ chats_id: cid }) => {
+                dispatch(deleteUserFromChat(cid));
             });
     };
 };
