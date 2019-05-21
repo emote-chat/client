@@ -32,10 +32,10 @@ import {
 import { Icon as MaterialIcon } from 'react-native-elements';
 
 import {
-    fetchMessagesInChat,
-    putMessage,
-    createReaction,
-    removeUserFromChat
+    fetchMessages,
+    fetchCreateMessage,
+    fetchCreateReaction,
+    fetchRemoveUserFromChat
 } from '../actions/chats';
 
 import { ChatMessage } from '../components/ChatMessage';
@@ -53,7 +53,7 @@ class ChatScreen extends React.Component {
 
     componentDidMount() {
         const cid = this.props.navigation.getParam('chatId');
-        this.props.fetchMessagesInChat(cid);
+        this.props.fetchMessages(cid);
     }
 
     componentDidUpdate(prevProps) {
@@ -74,15 +74,20 @@ class ChatScreen extends React.Component {
     submitForm = () => {
         const { inputText } = this.state;
         const cid = this.props.navigation.getParam('chatId');
-        this.props.putMessage(cid, inputText);
-        this.setState({ inputText: '' });
+        this.props.fetchCreateMessage(cid, inputText);
+        this.setState({ 
+            inputText: '' 
+        });
     };
 
     confirmLeavingChat = () => {
-        const { currentChat, currentUser, navigation, removeUserFromChat } = this.props;
+        const { currentChat, currentUser, navigation, fetchRemoveUserFromChat } = this.props;
+
+        const alertTitle = `Leaving chat ${navigation.getParam('chatName')}`;
+        const alertBody = 'Are you sure you want to leave?';
         Alert.alert(
-            `Leaving chat ${navigation.getParam('chatName')}`,
-            'Are you sure you want to leave?',
+            alertTitle,
+            alertBody,
             [
                 {
                     text: 'Cancel',
@@ -90,7 +95,7 @@ class ChatScreen extends React.Component {
                 },
                 { 
                     text: 'OK', 
-                    onPress: () => removeUserFromChat(currentChat.id, currentUser.id) 
+                    onPress: () => fetchRemoveUserFromChat(currentChat.id, currentUser.id) 
                 }
             ]
         );
@@ -162,10 +167,8 @@ class ChatScreen extends React.Component {
                                         });
                                     };
 
-                                    const handleEmojiClick = (
-                                        emoji
-                                    ) => {
-                                        this.props.createReaction(
+                                    const handleEmojiClick = (emoji) => {
+                                        this.props.fetchCreateReaction(
                                             mId,
                                             emoji
                                         );
@@ -174,20 +177,15 @@ class ChatScreen extends React.Component {
                                         });
                                     };
 
-                                    const isOpen =
-                                        selectedMessage == mId;
-                                    const isSelf =
-                                        currentUser &&
-                                        currentUser.id ==
-                                            message.users_id;
-                                    const user =
-                                        currentChat &&
+                                    const isOpen = selectedMessage == mId;
+                                    const isSelf = currentUser &&
+                                        currentUser.id == message.users_id;
+                                    const user = currentChat &&
                                         currentChat.users.find(
                                             ({ id }) =>
                                                 id == message.users_id
                                         );
-                                    const displayName =
-                                        user && user.display_name;
+                                    const displayName = user && user.display_name;
 
                                     return (
                                         <TouchableOpacity
@@ -264,13 +262,10 @@ function mapStateToProps({
 }
 
 const mapDispatchToProps = (dispatch) => ({
-    fetchMessagesInChat: bindActionCreators(
-        fetchMessagesInChat,
-        dispatch
-    ),
-    removeUserFromChat: bindActionCreators(removeUserFromChat, dispatch),
-    createReaction: bindActionCreators(createReaction, dispatch),
-    putMessage: bindActionCreators(putMessage, dispatch)
+    fetchMessages: bindActionCreators(fetchMessages, dispatch),
+    fetchRemoveUserFromChat: bindActionCreators(fetchRemoveUserFromChat, dispatch),
+    fetchCreateReaction: bindActionCreators(fetchCreateReaction, dispatch),
+    fetchCreateMessage: bindActionCreators(fetchCreateMessage, dispatch)
 });
 
 const styles = StyleSheet.create({

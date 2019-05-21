@@ -27,7 +27,7 @@ function chatsReducer(state = chatsInitialState, action) {
                 chats: state.chats.concat(payload)
             };
 
-        case types.CREATE_USER_IN_CHAT:
+        case types.ADD_USER_TO_CHAT:
             const { id, display_name: displayName, cid } = payload;
             
             const user = {
@@ -54,7 +54,7 @@ function chatsReducer(state = chatsInitialState, action) {
                 )
             };
 
-        case types.DELETE_USER_FROM_CHAT:
+        case types.REMOVE_USER_FROM_CHAT:
             return {
                 ...state,
                 chats: state.chats.filter(

@@ -32,11 +32,8 @@ import {
 
 import { baseUrl } from '../constants/api';
 
-import { putUserInChat } from '../actions/chats';
-import {
-    handleResponse,
-    addAuthHeader
-} from '../helpers/api';
+import { fetchAddUserToChat } from '../actions/chats';
+import { handleResponse, addAuthHeader } from '../helpers/api';
 
 import { ErrorMessage } from '../components/ErrorMessage';
 
@@ -114,7 +111,7 @@ class AddUserToChatScreen extends React.Component {
     }
 
     render() {
-        const { navigation, putUserInChat } = this.props;
+        const { navigation, fetchAddUserToChat } = this.props;
         const { foundUser, email, errorMessage } = this.state;
         return (
             <View style={styles.container}>
@@ -164,7 +161,7 @@ class AddUserToChatScreen extends React.Component {
                             {
                                 foundUser ? 
                                 <AddUserForm 
-                                    addUserToChat={putUserInChat}
+                                    addUserToChat={fetchAddUserToChat}
                                     cid={navigation.getParam('chatId')}
                                     user={foundUser} 
                                 /> : null
@@ -186,7 +183,7 @@ const mapStateToProps = ({
 };
 
 const mapDispatchToProps = (dispatch) => ({
-    putUserInChat: bindActionCreators(putUserInChat, dispatch)
+    fetchAddUserToChat: bindActionCreators(fetchAddUserToChat, dispatch)
 });
 
 const styles = StyleSheet.create({

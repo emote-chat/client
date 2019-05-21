@@ -27,6 +27,7 @@ import {
     Item,
     Input
 } from 'native-base';
+
 import {
     fetchChats,
     setCurrentChat,

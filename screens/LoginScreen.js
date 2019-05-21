@@ -15,9 +15,11 @@ import {
     ActionSheet
 } from 'native-base';
 
-import { ErrorMessage } from '../components/ErrorMessage';
 import { baseUrl } from '../constants/api';
+
 import { handleResponse, storeData } from '../helpers/api';
+
+import { ErrorMessage } from '../components/ErrorMessage';
 
 class LoginScreen extends React.Component {
     static navigationOptions = {

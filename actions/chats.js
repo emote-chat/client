@@ -48,16 +48,16 @@ const addReaction = (data) => {
     };
 };
 
-const createUserInChat = (data) => {
+const addUserToChat = (data) => {
     return {
-        type: types.CREATE_USER_IN_CHAT,
+        type: types.ADD_USER_TO_CHAT,
         payload: data
     };
 };
 
-const deleteUserFromChat = (data) => {
+const removeUserFromChat = (data) => {
     return {
-        type: types.DELETE_USER_FROM_CHAT,
+        type: types.REMOVE_USER_FROM_CHAT,
         payload: data
     };
 };
@@ -76,7 +76,7 @@ export const fetchChats = (data) => {
     };
 };
 
-export const fetchMessagesInChat = (cid) => {
+export const fetchMessages = (cid) => {
     return async (dispatch, getState) => {
         const headers = await addAuthHeader();
         return fetch(`${baseUrl}chat/${cid}`, {
@@ -90,16 +90,9 @@ export const fetchMessagesInChat = (cid) => {
     };
 };
 
-export const putChat = (name) => {
+export const fetchCreateChat = (name) => {
     return async (dispatch) => {
-        const addUserId = true;
-        const headers = await addAuthHeader(
-            {
-                'Content-Type': 'application/json',
-                Accept: 'application/json'
-            },
-            addUserId
-        );
+        const headers = await addAuthHeader();
         return fetch(`${baseUrl}chat`, {
             method: 'POST',
             headers,
@@ -113,7 +106,7 @@ export const putChat = (name) => {
     };
 };
 
-export const putUserInChat = (cid, uid) => {
+export const fetchAddUserToChat = (cid, uid) => {
     return async (dispatch) => {
         const headers = await addAuthHeader();
         return fetch(`${baseUrl}chat/${cid}/${uid}`, {
@@ -124,12 +117,13 @@ export const putUserInChat = (cid, uid) => {
             .then((data) => {
                 // add chat id to payload
                 data.cid = cid;
-                dispatch(createUserInChat(data));
-            });
+                dispatch(addUserToChat(data));
+            })
+            .catch((error) => console.log('Error:', error));
     };
 };
 
-export const removeUserFromChat = (cid, uid) => {
+export const fetchRemoveUserFromChat = (cid, uid) => {
     return async (dispatch) => {
         const headers = await addAuthHeader();
         return fetch(`${baseUrl}chat/${cid}/${uid}`, {
@@ -138,21 +132,15 @@ export const removeUserFromChat = (cid, uid) => {
         })
             .then(handleResponse)
             .then(({ chats_id: cid }) => {
-                dispatch(deleteUserFromChat(cid));
-            });
+                dispatch(removeUserFromChat(cid));
+            })
+            .catch((error) => console.log('Error:', error));
     };
 };
 
-export const createReaction = (messageId, emoji) => {
+export const fetchCreateReaction = (messageId, emoji) => {
     return async (dispatch) => {
-        const addUserId = true;
-        const headers = await addAuthHeader(
-            {
-                'Content-Type': 'application/json',
-                Accept: 'application/json'
-            },
-            addUserId
-        );
+        const headers = await addAuthHeader();
         return fetch(`${baseUrl}message/${messageId}/reaction`, {
             method: 'POST',
             headers,
@@ -166,16 +154,9 @@ export const createReaction = (messageId, emoji) => {
     };
 };
 
-export const putMessage = (cid, text) => {
+export const fetchCreateMessage = (cid, text) => {
     return async (dispatch) => {
-        const addUserId = true;
-        const headers = await addAuthHeader(
-            {
-                'Content-Type': 'application/json',
-                Accept: 'application/json'
-            },
-            addUserId
-        );
+        const headers = await addAuthHeader();
         return fetch(`${baseUrl}chat/${cid}/message`, {
             method: 'POST',
             headers,

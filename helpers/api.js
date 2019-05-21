@@ -29,22 +29,17 @@ const storeData = ({ access_token, user }) => {
     }
 };
 
-const addAuthHeader = async (headers = {}, addUserId) => {
+const addAuthHeader = async () => {
     try {
         const storedUser = await AsyncStorage.getItem('user');
         const user = JSON.parse(storedUser);
         if (user) {
             const user = JSON.parse(storedUser);
-            const newHeaders = addUserId
-                ? {
-                      authorization: `Bearer ${user.userToken}`,
-                      userId: user.id
-                  }
-                : { authorization: `Bearer ${user.userToken}` };
             return {
-                ...headers,
-                ...newHeaders
-            };
+                'Content-Type': 'application/json',
+                Accept: 'application/json',
+                authorization: `Bearer ${user.userToken}` 
+            }
         }
     } catch (error) {
         console.error(error);
