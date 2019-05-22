@@ -2,7 +2,6 @@ import * as types from '../constants/actionTypes';
 import { baseUrl } from '../constants/api';
 import {
     handleResponse,
-    storeData,
     addAuthHeader
 } from '../helpers/api';
 
@@ -41,7 +40,7 @@ const createChat = (data) => {
     };
 };
 
-const addReaction = (data) => {
+export const addReaction = (data) => {
     return {
         type: types.ADD_REACTION,
         payload: data
@@ -61,6 +60,18 @@ const removeUserFromChat = (data) => {
         payload: data
     };
 };
+
+const socketCreateMessage = (socket, data) => {
+    return async () => {
+        return await socket.emit('createMessage', data);
+    }
+}
+
+const socketAddReaction = (socket, data) => {
+    return async () => {
+        return await socket.emit('addReaction', data);
+    }
+}
 
 export const fetchChats = (data) => {
     return async (dispatch, getState) => {
@@ -138,7 +149,7 @@ export const fetchRemoveUserFromChat = (cid, uid) => {
     };
 };
 
-export const fetchCreateReaction = (messageId, emoji) => {
+export const fetchAddReaction = (socket, chatId, messageId, emoji) => {
     return async (dispatch) => {
         const headers = await addAuthHeader();
         return fetch(`${baseUrl}message/${messageId}/reaction`, {
@@ -148,13 +159,15 @@ export const fetchCreateReaction = (messageId, emoji) => {
         })
             .then(handleResponse)
             .then((data) => {
+                data.chats_id = chatId;
                 dispatch(addReaction(data));
+                dispatch(socketAddReaction(socket, data));
             })
             .catch((error) => console.log('Error:', error));
     };
 };
 
-export const fetchCreateMessage = (cid, text) => {
+export const fetchCreateMessage = (socket, cid, text) => {
     return async (dispatch) => {
         const headers = await addAuthHeader();
         return fetch(`${baseUrl}chat/${cid}/message`, {
@@ -165,6 +178,7 @@ export const fetchCreateMessage = (cid, text) => {
             .then(handleResponse)
             .then((data) => {
                 dispatch(createMessage(data));
+                dispatch(socketCreateMessage(socket, data));
             })
             .catch((error) => console.log('Error:', error));
     };
