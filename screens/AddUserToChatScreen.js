@@ -5,10 +5,7 @@ import {
     Platform,
     ScrollView,
     StyleSheet,
-    TouchableOpacity,
-    View,
-    KeyboardAvoidingView,
-    AsyncStorage
+    View
 } from 'react-native';
 import {
     Container,
@@ -23,8 +20,6 @@ import {
     Body,
     Icon,
     Text,
-    List,
-    ListItem,
     Item,
     Input,
     Toast
@@ -115,28 +110,28 @@ class AddUserToChatScreen extends React.Component {
         const { foundUser, email, errorMessage } = this.state;
         return (
             <View style={styles.container}>
+                <Header>
+                    <Left>
+                        <Button transparent>
+                            <Icon
+                                name="md-arrow-back"
+                                onPress={() =>
+                                    navigation.pop()
+                                }
+                            />
+                        </Button>
+                    </Left>
+                    <Body>
+                        <Title>
+                            <Text>Add User</Text>
+                        </Title>
+                    </Body>
+                    <Right />
+                </Header>
                 <ScrollView
                     style={styles.container}
                     contentContainerStyle={styles.contentContainer}>
                     <Container>
-                        <Header>
-                            <Left>
-                                <Button transparent>
-                                    <Icon
-                                        name="md-arrow-back"
-                                        onPress={() =>
-                                            navigation.pop()
-                                        }
-                                    />
-                                </Button>
-                            </Left>
-                            <Body>
-                                <Title>
-                                    <Text>Add User</Text>
-                                </Title>
-                            </Body>
-                            <Right />
-                        </Header>
                         <Content>
                             <Form style={styles.content}>
                                 <Item stackedLabel>
@@ -195,7 +190,6 @@ const styles = StyleSheet.create({
         top: 3
     },
     contentContainer: {
-        paddingTop: 30
     },
     tabBarInfoContainer: {
         position: 'absolute',

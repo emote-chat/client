@@ -5,11 +5,8 @@ import {
     Platform,
     ScrollView,
     StyleSheet,
-    TouchableOpacity,
     View,
-    KeyboardAvoidingView,
     FlatList,
-    TouchableHighlight,
     AsyncStorage
 } from 'react-native';
 import {
@@ -24,8 +21,6 @@ import {
     Icon,
     Text,
     ListItem,
-    Item,
-    Input
 } from 'native-base';
 
 import {
@@ -94,21 +89,21 @@ class ChatsScreen extends React.Component {
         const { navigation, chats } = this.props;
         return (
             <View style={styles.container}>
+                <Header>
+                    <Left>
+                        <Button transparent>
+                            <Icon name="menu" />
+                        </Button>
+                    </Left>
+                    <Body>
+                        <Title>Chats</Title>
+                    </Body>
+                    <Right />
+                </Header>
                 <ScrollView
                     style={styles.container}
                     contentContainerStyle={styles.contentContainer}>
                     <Container>
-                        <Header>
-                            <Left>
-                                <Button transparent>
-                                    <Icon name="menu" />
-                                </Button>
-                            </Left>
-                            <Body>
-                                <Title>Chats</Title>
-                            </Body>
-                            <Right />
-                        </Header>
                         <Content>
                             <Button
                                 style={styles.chatButton}
@@ -160,7 +155,6 @@ const styles = StyleSheet.create({
         top: 3
     },
     contentContainer: {
-        paddingTop: 30
     },
     tabBarInfoContainer: {
         position: 'absolute',
