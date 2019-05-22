@@ -10,9 +10,7 @@ import {
     Item,
     Form,
     Label,
-    Input,
-    View,
-    ActionSheet
+    Input
 } from 'native-base';
 
 import { baseUrl } from '../constants/api';
