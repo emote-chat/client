@@ -28,18 +28,21 @@ import {
     Toast
 } from 'native-base';
 import { Icon as MaterialIcon } from 'react-native-elements';
-import io from 'socket.io-client';
-
-import { baseUrl } from '../constants/api';
 
 import {
     createMessage,
+    createSocketConnection,
+    addUserToChat,
+    removeUserFromChat,
     addReaction,
     fetchMessages,
     fetchCreateMessage,
     fetchAddReaction,
     fetchRemoveUserFromChat
 } from '../actions/chats';
+
+import io from 'socket.io-client';
+import { baseUrl } from '../constants/api';
 
 import { ChatMessage } from '../components/ChatMessage';
 import { EmojiMenu } from '../components/EmojiMenu';
@@ -56,13 +59,25 @@ class ChatScreen extends React.Component {
             selectedMessage: null,
             inputText: ''
         };
-        
-        const { navigation, createMessage, addReaction } = this.props;
-        const cid = navigation.getParam('chatId');
 
         this.socket = io(baseUrl.slice(0, baseUrl.search('api')));
-
-        this.socket.emit('joinChat', cid)
+        
+        this.props.createSocketConnection(this.socket);
+    }
+    
+    componentDidMount() {
+        const { 
+            navigation, 
+            createMessage, 
+            addReaction, 
+            addUserToChat, 
+            removeUserFromChat
+        } = this.props;
+        const cid = navigation.getParam('chatId');
+        
+        this.props.fetchMessages(cid);
+        
+        this.socket.emit('joinChat', cid);
 
         this.socket.on('receiveMessage', (data) => {
             createMessage(data);
@@ -71,35 +86,38 @@ class ChatScreen extends React.Component {
         this.socket.on('receiveReaction', (data) => {
             addReaction(data);
         });
-    }
-    
-    
-    componentDidMount() {
-        const cid = this.props.navigation.getParam('chatId');
-        this.props.fetchMessages(cid);
-    }
-    
-    componentDidUpdate(prevProps) {
-        const {
-            chats, 
-            currentChat, 
-            currentUser, 
-            navigation
-        } = this.props;
 
-        if (prevProps.chats !== chats) {
-            Toast.show({
-                text: `${currentUser.display_name}, you have left ${currentChat.name}`,
-                buttonText: "Okay",
-                type: "success",
-                duration: 2000,
-                onClose: () => navigation.navigate('Chats')
-            });
-        }
+        this.socket.on('receiveAddedUser', (data) => {
+            addUserToChat(data);
+        });
+
+        this.socket.on('receiveRemovedUser', (data) => {
+            removeUserFromChat(data);
+        });
+
+        this.socket.on('removedSelf', () => {
+            this.displayToast();
+        });
     }
 
     componentWillUnmount() {
         this.socket.disconnect();
+    }
+
+    displayToast() {
+        const {
+            currentChat,
+            currentUser,
+            navigation
+        } = this.props;
+
+        Toast.show({
+            text: `${currentUser.display_name}, you have left ${currentChat.name}`,
+            buttonText: "Okay",
+            type: "success",
+            duration: 2000,
+            onClose: () => navigation.navigate('Chats')
+        });
     }
 
     // Send message form
@@ -135,7 +153,15 @@ class ChatScreen extends React.Component {
                 },
                 { 
                     text: 'OK', 
-                    onPress: () => fetchRemoveUserFromChat(currentChat.id, currentUser.id) 
+                    onPress: () => {
+                        const isSelf = true;
+                        fetchRemoveUserFromChat(
+                            this.socket, 
+                            currentChat.id, 
+                            currentUser.id, 
+                            isSelf
+                        )
+                    }
                 }
             ]
         );
@@ -290,21 +316,25 @@ class ChatScreen extends React.Component {
     }
 }
 
-function mapStateToProps({
-    chatsReducer: { currentChat, chats },
+const mapStateToProps = ({
+    chatsReducer: { currentChat, chats, socket },
     userReducer: { currentUser },
     messageReducer: { messages }
-}) {
+}) => {
     return {
+        socket,
         chats,
         currentChat,
         currentUser,
         messages
     };
-}
+};
 
 const mapDispatchToProps = (dispatch) => ({
+    createSocketConnection: bindActionCreators(createSocketConnection, dispatch),
     addReaction: bindActionCreators(addReaction, dispatch),
+    addUserToChat: bindActionCreators(addUserToChat, dispatch),
+    removeUserFromChat: bindActionCreators(removeUserFromChat, dispatch),
     createMessage: bindActionCreators(createMessage, dispatch),
     fetchMessages: bindActionCreators(fetchMessages, dispatch),
     fetchRemoveUserFromChat: bindActionCreators(fetchRemoveUserFromChat, dispatch),

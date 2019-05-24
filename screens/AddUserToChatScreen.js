@@ -32,11 +32,12 @@ import { handleResponse, addAuthHeader } from '../helpers/api';
 
 import { ErrorMessage } from '../components/ErrorMessage';
 
-const AddUserForm = ({ addUserToChat, cid: chatId, user }) => {
+const AddUserForm = ({ addUserToChat, cid: chatId, user, socket }) => {
     const { 
         id: userId, 
         display_name: displayName
     } = user;
+    
     return (
         <Form style={styles.contentContainer}>
             <Item stackedLabel>
@@ -47,7 +48,7 @@ const AddUserForm = ({ addUserToChat, cid: chatId, user }) => {
             </Item>
             <Button 
                 full
-                onPress={() => addUserToChat(chatId, userId)}>
+                onPress={() => addUserToChat(socket, chatId, userId)}>
                 <Text>Add To Chat</Text>
             </Button>
         </Form>
@@ -106,7 +107,7 @@ class AddUserToChatScreen extends React.Component {
     }
 
     render() {
-        const { navigation, fetchAddUserToChat } = this.props;
+        const { navigation, fetchAddUserToChat, socket } = this.props;
         const { foundUser, email, errorMessage } = this.state;
         return (
             <View style={styles.container}>
@@ -159,6 +160,7 @@ class AddUserToChatScreen extends React.Component {
                                     addUserToChat={fetchAddUserToChat}
                                     cid={navigation.getParam('chatId')}
                                     user={foundUser} 
+                                    socket={socket} 
                                 /> : null
                             }
                         </Content>
@@ -170,9 +172,10 @@ class AddUserToChatScreen extends React.Component {
 }
 
 const mapStateToProps = ({
-    chatsReducer: { addedUser }
+    chatsReducer: { addedUser, socket }
 }) => {
     return {
+        socket,
         addedUser
     };
 };
