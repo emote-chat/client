@@ -6,6 +6,7 @@ import {
     StyleSheet,
     AsyncStorage
 } from 'react-native';
+import { connect } from 'react-redux';
 
 import {
     Container,
@@ -19,14 +20,18 @@ import {
     Title
 } from 'native-base';
 
-export default class SettingsScreen extends React.Component {
+class SettingsScreen extends React.Component {
     static navigationOptions = {
         header: null
     };
 
     _logout = async () => {
+        const { socket, navigation } = this.props;
+        if (socket) {
+            socket.disconnect();
+        }
         await AsyncStorage.clear();
-        this.props.navigation.navigate('Auth');
+        navigation.navigate('Auth');
     };
 
     render() {
@@ -59,6 +64,14 @@ export default class SettingsScreen extends React.Component {
     }
 }
 
+const mapStateToProps = ({
+    chatsReducer: { socket }
+}) => {
+    return {
+        socket
+    };
+};
+
 const styles = StyleSheet.create({
     container: {
         flex: 1,
@@ -68,3 +81,8 @@ const styles = StyleSheet.create({
         paddingTop: 30
     }
 });
+
+export default connect(
+    mapStateToProps,
+    null
+)(SettingsScreen);
