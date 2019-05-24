@@ -40,6 +40,13 @@ const createChat = (data) => {
     };
 };
 
+export const createSocketConnection = (data) => {
+    return {
+        type: types.CREATE_SOCKET_CONNECTION,
+        payload: data
+    };
+};
+
 export const addReaction = (data) => {
     return {
         type: types.ADD_REACTION,
@@ -47,16 +54,23 @@ export const addReaction = (data) => {
     };
 };
 
-const addUserToChat = (data) => {
+export const addUserToChat = (data) => {
     return {
         type: types.ADD_USER_TO_CHAT,
         payload: data
     };
 };
 
-const removeUserFromChat = (data) => {
+export const removeUserFromChat = (data) => {
     return {
         type: types.REMOVE_USER_FROM_CHAT,
+        payload: data
+    };
+};
+
+const removeSelfFromChat = (data) => {
+    return {
+        type: types.REMOVE_SELF_FROM_CHAT,
         payload: data
     };
 };
@@ -73,7 +87,19 @@ const socketAddReaction = (socket, data) => {
     }
 }
 
-export const fetchChats = (data) => {
+const socketAddUserToChat= (socket, data) => {
+    return async () => {
+        return await socket.emit('addUserToChat', data);
+    }
+}
+
+const socketRemoveUserFromChat = (socket, data) => {
+    return async () => {
+        return await socket.emit('removeUserFromChat', data);
+    }
+}
+
+export const fetchChats = () => {
     return async (dispatch, getState) => {
         const headers = await addAuthHeader();
         return fetch(`${baseUrl}chat`, {
@@ -117,7 +143,7 @@ export const fetchCreateChat = (name) => {
     };
 };
 
-export const fetchAddUserToChat = (cid, uid) => {
+export const fetchAddUserToChat = (socket, cid, uid) => {
     return async (dispatch) => {
         const headers = await addAuthHeader();
         return fetch(`${baseUrl}chat/${cid}/${uid}`, {
@@ -127,14 +153,15 @@ export const fetchAddUserToChat = (cid, uid) => {
             .then(handleResponse)
             .then((data) => {
                 // add chat id to payload
-                data.cid = cid;
+                data.chats_id = cid;
                 dispatch(addUserToChat(data));
+                dispatch(socketAddUserToChat(socket, data));
             })
             .catch((error) => console.log('Error:', error));
     };
 };
 
-export const fetchRemoveUserFromChat = (cid, uid) => {
+export const fetchRemoveUserFromChat = (socket, cid, uid, isSelf = false) => {
     return async (dispatch) => {
         const headers = await addAuthHeader();
         return fetch(`${baseUrl}chat/${cid}/${uid}`, {
@@ -142,8 +169,13 @@ export const fetchRemoveUserFromChat = (cid, uid) => {
             headers
         })
             .then(handleResponse)
-            .then(({ chats_id: cid }) => {
-                dispatch(removeUserFromChat(cid));
+            .then(data => {
+                if (isSelf) {
+                    dispatch(removeSelfFromChat(data));
+                } else {
+                    dispatch(removeUserFromChat(data));
+                }
+                dispatch(socketRemoveUserFromChat(socket, data));
             })
             .catch((error) => console.log('Error:', error));
     };
