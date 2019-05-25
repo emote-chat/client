@@ -23,8 +23,6 @@ import {
     Body,
     Icon,
     Text,
-    List,
-    ListItem,
     Item,
     Input,
     Toast
@@ -32,11 +30,19 @@ import {
 import { Icon as MaterialIcon } from 'react-native-elements';
 
 import {
-    fetchMessagesInChat,
-    putMessage,
-    createReaction,
-    removeUserFromChat
+    createMessage,
+    createSocketConnection,
+    addUserToChat,
+    removeUserFromChat,
+    addReaction,
+    fetchMessages,
+    fetchCreateMessage,
+    fetchAddReaction,
+    fetchRemoveUserFromChat
 } from '../actions/chats';
+
+import io from 'socket.io-client';
+import { baseUrl } from '../constants/api';
 
 import { ChatMessage } from '../components/ChatMessage';
 import { EmojiMenu } from '../components/EmojiMenu';
@@ -46,43 +52,100 @@ class ChatScreen extends React.Component {
         header: null
     };
 
-    state = {
-        selectedMessage: null,
-        inputText: ''
-    };
+    constructor(props) {
+        super(props);
 
+        this.state = {
+            selectedMessage: null,
+            inputText: ''
+        };
+
+        this.socket = io(baseUrl.slice(0, baseUrl.search('api')));
+        
+        this.props.createSocketConnection(this.socket);
+    }
+    
     componentDidMount() {
-        const cid = this.props.navigation.getParam('chatId');
-        this.props.fetchMessagesInChat(cid);
+        const { 
+            navigation, 
+            createMessage, 
+            addReaction, 
+            addUserToChat, 
+            removeUserFromChat
+        } = this.props;
+        const cid = navigation.getParam('chatId');
+        
+        this.props.fetchMessages(cid);
+        
+        this.socket.emit('joinChat', cid);
+
+        this.socket.on('receiveMessage', (data) => {
+            createMessage(data);
+        });
+
+        this.socket.on('receiveReaction', (data) => {
+            addReaction(data);
+        });
+
+        this.socket.on('receiveAddedUser', (data) => {
+            addUserToChat(data);
+        });
+
+        this.socket.on('receiveRemovedUser', (data) => {
+            removeUserFromChat(data);
+        });
+
+        this.socket.on('removedSelf', () => {
+            this.displayToast();
+        });
     }
 
-    componentDidUpdate(prevProps) {
-        const { chats, currentChat, currentUser, navigation } = this.props;
-        const { display_name: displayName } = currentUser;
-        if (prevProps.chats !== chats) {
-            Toast.show({
-                text: `${displayName}, you have left ${currentChat.name}`,
-                buttonText: "Okay",
-                type: "success",
-                duration: 2000,
-                onClose: () => navigation.navigate('Chats')
-            });
-        }
+    componentWillUnmount() {
+        this.socket.disconnect();
+    }
+
+    displayToast() {
+        const {
+            currentChat,
+            currentUser,
+            navigation
+        } = this.props;
+
+        Toast.show({
+            text: `${currentUser.display_name}, you have left ${currentChat.name}`,
+            buttonText: "Okay",
+            type: "success",
+            duration: 2000,
+            onClose: () => navigation.navigate('Chats')
+        });
     }
 
     // Send message form
     submitForm = () => {
         const { inputText } = this.state;
-        const cid = this.props.navigation.getParam('chatId');
-        this.props.putMessage(cid, inputText);
-        this.setState({ inputText: '' });
+        const { navigation, fetchCreateMessage } = this.props;
+        const cid = navigation.getParam('chatId');
+
+        fetchCreateMessage(this.socket, cid, inputText);
+
+        this.setState({ 
+            inputText: '' 
+        });
     };
 
     confirmLeavingChat = () => {
-        const { currentChat, currentUser, navigation, removeUserFromChat } = this.props;
+        const { 
+            currentChat, 
+            currentUser, 
+            navigation, 
+            fetchRemoveUserFromChat 
+        } = this.props;
+
+        const alertTitle = `Leaving chat ${navigation.getParam('chatName')}`;
+        const alertBody = 'Are you sure you want to leave?';
         Alert.alert(
-            `Leaving chat ${navigation.getParam('chatName')}`,
-            'Are you sure you want to leave?',
+            alertTitle,
+            alertBody,
             [
                 {
                     text: 'Cancel',
@@ -90,7 +153,15 @@ class ChatScreen extends React.Component {
                 },
                 { 
                     text: 'OK', 
-                    onPress: () => removeUserFromChat(currentChat.id, currentUser.id) 
+                    onPress: () => {
+                        const isSelf = true;
+                        fetchRemoveUserFromChat(
+                            this.socket, 
+                            currentChat.id, 
+                            currentUser.id, 
+                            isSelf
+                        )
+                    }
                 }
             ]
         );
@@ -110,51 +181,54 @@ class ChatScreen extends React.Component {
         } = this.state;
         return (
             <View style={styles.container}>
+                <Header>
+                    <Left>
+                        <Button transparent>
+                            <Icon
+                                name="md-arrow-back"
+                                onPress={() =>
+                                    navigation.pop()
+                                }
+                            />
+                        </Button>
+                    </Left>
+                    <Body>
+                        <Title>
+                            {navigation.getParam('chatName')}
+                        </Title>
+                    </Body>
+                    <Right>
+                        <Button
+                            transparent
+                            onPress={() =>
+                                this.props.navigation.navigate('AddUserToChat', {
+                                    chatId: currentChat.id
+                                })
+                            }>
+                            <Icon name="person-add" />
+                        </Button>
+                        <Button
+                            transparent
+                            onPress={this.confirmLeavingChat}>
+                            <MaterialIcon
+                                name="logout"
+                                type="material-community"
+                                color="red"
+                                iconStyle={styles.materialIcon}
+                            />
+                        </Button>
+                    </Right>
+                </Header>
                 <ScrollView
                     style={styles.chatContainer}
-                    contentContainerStyle={styles.contentContainer}>
+                    contentContainerStyle={styles.contentContainer}
+                    ref={ref => this.scrollView = ref}
+                    onContentSizeChange={() => {
+                        this.scrollView.scrollToEnd({ animated: true });
+                    }}>
                     <Container>
-                        <Header>
-                            <Left>
-                                <Button transparent>
-                                    <Icon
-                                        name="md-arrow-back"
-                                        onPress={() =>
-                                            navigation.pop()
-                                        }
-                                    />
-                                </Button>
-                            </Left>
-                            <Body>
-                                <Title>
-                                    {navigation.getParam('chatName')}
-                                </Title>
-                            </Body>
-                            <Right>
-                                <Button 
-                                    transparent
-                                    onPress={() =>
-                                        this.props.navigation.navigate('AddUserToChat', {
-                                            chatId: currentChat.id
-                                        })
-                                    }>
-                                    <Icon name="person-add" />
-                                </Button>
-                                <Button
-                                    transparent
-                                    onPress={this.confirmLeavingChat}>
-                                    <MaterialIcon 
-                                        name="logout"
-                                        type="material-community"
-                                        color="red"
-                                        iconStyle={styles.materialIcon} 
-                                    />
-                                </Button>
-                            </Right>
-                        </Header>
                         <Content>
-                            {messages &&
-                                messages.map((message) => {
+                            {messages && messages.map((message) => {
                                     const mId = message.id;
                                     const _handleLongPress = () => {
                                         this.setState({
@@ -162,10 +236,10 @@ class ChatScreen extends React.Component {
                                         });
                                     };
 
-                                    const handleEmojiClick = (
-                                        emoji
-                                    ) => {
-                                        this.props.createReaction(
+                                    const handleEmojiClick = (emoji) => {
+                                        this.props.fetchAddReaction(
+                                            this.socket,
+                                            currentChat.id,
                                             mId,
                                             emoji
                                         );
@@ -174,20 +248,14 @@ class ChatScreen extends React.Component {
                                         });
                                     };
 
-                                    const isOpen =
-                                        selectedMessage == mId;
-                                    const isSelf =
-                                        currentUser &&
-                                        currentUser.id ==
-                                            message.users_id;
-                                    const user =
-                                        currentChat &&
+                                    const isOpen = selectedMessage == mId;
+                                    const isSelf = currentUser &&
+                                        currentUser.id == message.users_id;
+                                    const user = currentChat &&
                                         currentChat.users.find(
-                                            ({ id }) =>
-                                                id == message.users_id
+                                            ({ id }) => id == message.users_id
                                         );
-                                    const displayName =
-                                        user && user.display_name;
+                                    const displayName = user && user.display_name;
 
                                     return (
                                         <TouchableOpacity
@@ -199,9 +267,7 @@ class ChatScreen extends React.Component {
                                                 key={mId}
                                                 message={message}
                                                 isSelf={isSelf}
-                                                displayName={
-                                                    displayName
-                                                }
+                                                displayName={displayName}
                                                 users={
                                                     currentChat &&
                                                     currentChat.users
@@ -225,7 +291,7 @@ class ChatScreen extends React.Component {
                         position: 'absolute',
                         left: 0,
                         right: 0,
-                        bottom: 0
+                        bottom: 0,
                     }}
                     behavior="position">
                     <Form style={styles.content}>
@@ -250,27 +316,30 @@ class ChatScreen extends React.Component {
     }
 }
 
-function mapStateToProps({
-    chatsReducer: { currentChat, chats },
+const mapStateToProps = ({
+    chatsReducer: { currentChat, chats, socket },
     userReducer: { currentUser },
     messageReducer: { messages }
-}) {
+}) => {
     return {
+        socket,
         chats,
         currentChat,
         currentUser,
         messages
     };
-}
+};
 
 const mapDispatchToProps = (dispatch) => ({
-    fetchMessagesInChat: bindActionCreators(
-        fetchMessagesInChat,
-        dispatch
-    ),
+    createSocketConnection: bindActionCreators(createSocketConnection, dispatch),
+    addReaction: bindActionCreators(addReaction, dispatch),
+    addUserToChat: bindActionCreators(addUserToChat, dispatch),
     removeUserFromChat: bindActionCreators(removeUserFromChat, dispatch),
-    createReaction: bindActionCreators(createReaction, dispatch),
-    putMessage: bindActionCreators(putMessage, dispatch)
+    createMessage: bindActionCreators(createMessage, dispatch),
+    fetchMessages: bindActionCreators(fetchMessages, dispatch),
+    fetchRemoveUserFromChat: bindActionCreators(fetchRemoveUserFromChat, dispatch),
+    fetchAddReaction: bindActionCreators(fetchAddReaction, dispatch),
+    fetchCreateMessage: bindActionCreators(fetchCreateMessage, dispatch)
 });
 
 const styles = StyleSheet.create({
@@ -279,15 +348,15 @@ const styles = StyleSheet.create({
         backgroundColor: '#fff'
     },
     chatContainer: {
-        flex: 1,
-        backgroundColor: '#fff',
-        marginBottom: 70
+        marginBottom: 50
+    },
+    chatInput: {
+        backgroundColor: '#fff'
     },
     chatButton: {
         top: 3
     },
     contentContainer: {
-        paddingTop: 30
     },
     tabBarInfoContainer: {
         position: 'absolute',

@@ -1,13 +1,12 @@
 import React from 'react';
 import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+
 import {
     Platform,
     ScrollView,
     StyleSheet,
-    TouchableOpacity,
-    View,
-    KeyboardAvoidingView,
-    AsyncStorage
+    View
 } from 'react-native';
 import {
     Container,
@@ -22,13 +21,11 @@ import {
     Body,
     Icon,
     Text,
-    List,
-    ListItem,
     Item,
     Input
 } from 'native-base';
 
-import { putChat } from '../actions/chats';
+import { fetchCreateChat } from '../actions/chats';
 
 class CreateChatScreen extends React.Component {
     static navigationOptions = {
@@ -39,39 +36,46 @@ class CreateChatScreen extends React.Component {
         name: ''
     };
 
+    componentDidUpdate(prevProps) {
+        const { chats, navigation } = this.props;
+        if (prevProps.chats !== chats) {
+            navigation.pop();
+        }
+    }
+
     _submitForm = async () => {
         const { name } = this.state;
-        // create new chat using field for its name
-        this.props.putChat(name);
-        this.props.navigation.pop();
+        const { fetchCreateChat } = this.props;
+        // create new chat using name input field
+        fetchCreateChat(name);
     };
 
     render() {
         const { navigation } = this.props;
         return (
             <View style={styles.container}>
+                <Header>
+                    <Left>
+                        <Button transparent>
+                            <Icon
+                                name="md-arrow-back"
+                                onPress={() =>
+                                    navigation.pop()
+                                }
+                            />
+                        </Button>
+                    </Left>
+                    <Body>
+                        <Title>
+                            <Text>Create Chat</Text>
+                        </Title>
+                    </Body>
+                    <Right />
+                </Header>
                 <ScrollView
                     style={styles.container}
                     contentContainerStyle={styles.contentContainer}>
                     <Container>
-                        <Header>
-                            <Left>
-                                <Button transparent>
-                                    <Icon
-                                        name="md-arrow-back"
-                                        onPress={() =>
-                                            navigation.pop()
-                                        }
-                                    />
-                                </Button>
-                            </Left>
-                            <Body>
-                                <Title>
-                                    <Text>Create Chat</Text>
-                                </Title>
-                            </Body>
-                            <Right />
-                        </Header>
                         <Content>
                             <Form style={styles.content}>
                                 <Item stackedLabel>
@@ -97,13 +101,17 @@ class CreateChatScreen extends React.Component {
     }
 }
 
-function mapStateToProps() {
-    return {};
-}
-
-const mapDispatchToProps = {
-    putChat
+const mapStateToProps = ({
+    chatsReducer: { chats }
+}) => {
+    return {
+        chats
+    };
 };
+
+const mapDispatchToProps = (dispatch) => ({
+    fetchCreateChat: bindActionCreators(fetchCreateChat, dispatch)
+});
 
 const styles = StyleSheet.create({
     container: {
@@ -114,7 +122,7 @@ const styles = StyleSheet.create({
         top: 3
     },
     contentContainer: {
-        paddingTop: 30
+        paddingTop: 10
     },
     tabBarInfoContainer: {
         position: 'absolute',

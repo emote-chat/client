@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, AsyncStorage } from 'react-native';
+import { StyleSheet } from 'react-native';
 import {
     Container,
     H2,
@@ -12,9 +12,11 @@ import {
     Input
 } from 'native-base';
 
-import { ErrorMessage } from '../components/ErrorMessage';
 import { baseUrl } from '../constants/api';
+
 import { handleResponse, storeData } from '../helpers/api';
+
+import { ErrorMessage } from '../components/ErrorMessage';
 
 export default class SignUpScreen extends React.Component {
     static navigationOptions = {

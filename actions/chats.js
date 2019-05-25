@@ -2,7 +2,6 @@ import * as types from '../constants/actionTypes';
 import { baseUrl } from '../constants/api';
 import {
     handleResponse,
-    storeData,
     addAuthHeader
 } from '../helpers/api';
 
@@ -41,28 +40,66 @@ const createChat = (data) => {
     };
 };
 
-const addReaction = (data) => {
+export const createSocketConnection = (data) => {
+    return {
+        type: types.CREATE_SOCKET_CONNECTION,
+        payload: data
+    };
+};
+
+export const addReaction = (data) => {
     return {
         type: types.ADD_REACTION,
         payload: data
     };
 };
 
-const createUserInChat = (data) => {
+export const addUserToChat = (data) => {
     return {
-        type: types.CREATE_USER_IN_CHAT,
+        type: types.ADD_USER_TO_CHAT,
         payload: data
     };
 };
 
-const deleteUserFromChat = (data) => {
+export const removeUserFromChat = (data) => {
     return {
-        type: types.DELETE_USER_FROM_CHAT,
+        type: types.REMOVE_USER_FROM_CHAT,
         payload: data
     };
 };
 
-export const fetchChats = (data) => {
+const removeSelfFromChat = (data) => {
+    return {
+        type: types.REMOVE_SELF_FROM_CHAT,
+        payload: data
+    };
+};
+
+const socketCreateMessage = (socket, data) => {
+    return async () => {
+        return await socket.emit('createMessage', data);
+    }
+}
+
+const socketAddReaction = (socket, data) => {
+    return async () => {
+        return await socket.emit('addReaction', data);
+    }
+}
+
+const socketAddUserToChat= (socket, data) => {
+    return async () => {
+        return await socket.emit('addUserToChat', data);
+    }
+}
+
+const socketRemoveUserFromChat = (socket, data) => {
+    return async () => {
+        return await socket.emit('removeUserFromChat', data);
+    }
+}
+
+export const fetchChats = () => {
     return async (dispatch, getState) => {
         const headers = await addAuthHeader();
         return fetch(`${baseUrl}chat`, {
@@ -76,7 +113,7 @@ export const fetchChats = (data) => {
     };
 };
 
-export const fetchMessagesInChat = (cid) => {
+export const fetchMessages = (cid) => {
     return async (dispatch, getState) => {
         const headers = await addAuthHeader();
         return fetch(`${baseUrl}chat/${cid}`, {
@@ -90,16 +127,9 @@ export const fetchMessagesInChat = (cid) => {
     };
 };
 
-export const putChat = (name) => {
+export const fetchCreateChat = (name) => {
     return async (dispatch) => {
-        const addUserId = true;
-        const headers = await addAuthHeader(
-            {
-                'Content-Type': 'application/json',
-                Accept: 'application/json'
-            },
-            addUserId
-        );
+        const headers = await addAuthHeader();
         return fetch(`${baseUrl}chat`, {
             method: 'POST',
             headers,
@@ -113,7 +143,7 @@ export const putChat = (name) => {
     };
 };
 
-export const putUserInChat = (cid, uid) => {
+export const fetchAddUserToChat = (socket, cid, uid) => {
     return async (dispatch) => {
         const headers = await addAuthHeader();
         return fetch(`${baseUrl}chat/${cid}/${uid}`, {
@@ -123,13 +153,15 @@ export const putUserInChat = (cid, uid) => {
             .then(handleResponse)
             .then((data) => {
                 // add chat id to payload
-                data.cid = cid;
-                dispatch(createUserInChat(data));
-            });
+                data.chats_id = cid;
+                dispatch(addUserToChat(data));
+                dispatch(socketAddUserToChat(socket, data));
+            })
+            .catch((error) => console.log('Error:', error));
     };
 };
 
-export const removeUserFromChat = (cid, uid) => {
+export const fetchRemoveUserFromChat = (socket, cid, uid, isSelf = false) => {
     return async (dispatch) => {
         const headers = await addAuthHeader();
         return fetch(`${baseUrl}chat/${cid}/${uid}`, {
@@ -137,22 +169,21 @@ export const removeUserFromChat = (cid, uid) => {
             headers
         })
             .then(handleResponse)
-            .then(({ chats_id: cid }) => {
-                dispatch(deleteUserFromChat(cid));
-            });
+            .then(data => {
+                if (isSelf) {
+                    dispatch(removeSelfFromChat(data));
+                } else {
+                    dispatch(removeUserFromChat(data));
+                }
+                dispatch(socketRemoveUserFromChat(socket, data));
+            })
+            .catch((error) => console.log('Error:', error));
     };
 };
 
-export const createReaction = (messageId, emoji) => {
+export const fetchAddReaction = (socket, chatId, messageId, emoji) => {
     return async (dispatch) => {
-        const addUserId = true;
-        const headers = await addAuthHeader(
-            {
-                'Content-Type': 'application/json',
-                Accept: 'application/json'
-            },
-            addUserId
-        );
+        const headers = await addAuthHeader();
         return fetch(`${baseUrl}message/${messageId}/reaction`, {
             method: 'POST',
             headers,
@@ -160,22 +191,17 @@ export const createReaction = (messageId, emoji) => {
         })
             .then(handleResponse)
             .then((data) => {
+                data.chats_id = chatId;
                 dispatch(addReaction(data));
+                dispatch(socketAddReaction(socket, data));
             })
             .catch((error) => console.log('Error:', error));
     };
 };
 
-export const putMessage = (cid, text) => {
+export const fetchCreateMessage = (socket, cid, text) => {
     return async (dispatch) => {
-        const addUserId = true;
-        const headers = await addAuthHeader(
-            {
-                'Content-Type': 'application/json',
-                Accept: 'application/json'
-            },
-            addUserId
-        );
+        const headers = await addAuthHeader();
         return fetch(`${baseUrl}chat/${cid}/message`, {
             method: 'POST',
             headers,
@@ -184,6 +210,7 @@ export const putMessage = (cid, text) => {
             .then(handleResponse)
             .then((data) => {
                 dispatch(createMessage(data));
+                dispatch(socketCreateMessage(socket, data));
             })
             .catch((error) => console.log('Error:', error));
     };

@@ -5,10 +5,7 @@ import {
     Platform,
     ScrollView,
     StyleSheet,
-    TouchableOpacity,
-    View,
-    KeyboardAvoidingView,
-    AsyncStorage
+    View
 } from 'react-native';
 import {
     Container,
@@ -23,8 +20,6 @@ import {
     Body,
     Icon,
     Text,
-    List,
-    ListItem,
     Item,
     Input,
     Toast
@@ -32,19 +27,17 @@ import {
 
 import { baseUrl } from '../constants/api';
 
-import { putUserInChat } from '../actions/chats';
-import {
-    handleResponse,
-    addAuthHeader
-} from '../helpers/api';
+import { fetchAddUserToChat } from '../actions/chats';
+import { handleResponse, addAuthHeader } from '../helpers/api';
 
 import { ErrorMessage } from '../components/ErrorMessage';
 
-const AddUserForm = ({ addUserToChat, cid: chatId, user }) => {
+const AddUserForm = ({ addUserToChat, cid: chatId, user, socket }) => {
     const { 
         id: userId, 
         display_name: displayName
     } = user;
+    
     return (
         <Form style={styles.contentContainer}>
             <Item stackedLabel>
@@ -55,7 +48,7 @@ const AddUserForm = ({ addUserToChat, cid: chatId, user }) => {
             </Item>
             <Button 
                 full
-                onPress={() => addUserToChat(chatId, userId)}>
+                onPress={() => addUserToChat(socket, chatId, userId)}>
                 <Text>Add To Chat</Text>
             </Button>
         </Form>
@@ -114,32 +107,32 @@ class AddUserToChatScreen extends React.Component {
     }
 
     render() {
-        const { navigation, putUserInChat } = this.props;
+        const { navigation, fetchAddUserToChat, socket } = this.props;
         const { foundUser, email, errorMessage } = this.state;
         return (
             <View style={styles.container}>
+                <Header>
+                    <Left>
+                        <Button transparent>
+                            <Icon
+                                name="md-arrow-back"
+                                onPress={() =>
+                                    navigation.pop()
+                                }
+                            />
+                        </Button>
+                    </Left>
+                    <Body>
+                        <Title>
+                            <Text>Add User</Text>
+                        </Title>
+                    </Body>
+                    <Right />
+                </Header>
                 <ScrollView
                     style={styles.container}
                     contentContainerStyle={styles.contentContainer}>
                     <Container>
-                        <Header>
-                            <Left>
-                                <Button transparent>
-                                    <Icon
-                                        name="md-arrow-back"
-                                        onPress={() =>
-                                            navigation.pop()
-                                        }
-                                    />
-                                </Button>
-                            </Left>
-                            <Body>
-                                <Title>
-                                    <Text>Add User</Text>
-                                </Title>
-                            </Body>
-                            <Right />
-                        </Header>
                         <Content>
                             <Form style={styles.content}>
                                 <Item stackedLabel>
@@ -164,9 +157,10 @@ class AddUserToChatScreen extends React.Component {
                             {
                                 foundUser ? 
                                 <AddUserForm 
-                                    addUserToChat={putUserInChat}
+                                    addUserToChat={fetchAddUserToChat}
                                     cid={navigation.getParam('chatId')}
                                     user={foundUser} 
+                                    socket={socket} 
                                 /> : null
                             }
                         </Content>
@@ -178,15 +172,16 @@ class AddUserToChatScreen extends React.Component {
 }
 
 const mapStateToProps = ({
-    chatsReducer: { addedUser }
+    chatsReducer: { addedUser, socket }
 }) => {
     return {
+        socket,
         addedUser
     };
 };
 
 const mapDispatchToProps = (dispatch) => ({
-    putUserInChat: bindActionCreators(putUserInChat, dispatch)
+    fetchAddUserToChat: bindActionCreators(fetchAddUserToChat, dispatch)
 });
 
 const styles = StyleSheet.create({
@@ -198,7 +193,6 @@ const styles = StyleSheet.create({
         top: 3
     },
     contentContainer: {
-        paddingTop: 30
     },
     tabBarInfoContainer: {
         position: 'absolute',
