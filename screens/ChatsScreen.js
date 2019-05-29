@@ -26,6 +26,7 @@ import {
 import {
     fetchChats,
     setCurrentChat,
+    createSocketConnection
 } from '../actions/chats';
 import { setCurrentUser } from '../actions/user';
 
@@ -59,6 +60,7 @@ class ChatsScreen extends React.Component {
             );
         }
 
+        this.props.createSocketConnection();
         this.props.fetchChats();
     }
 
@@ -141,6 +143,7 @@ const mapStateToProps = ({
 };
 
 const mapDispatchToProps = (dispatch) => ({
+    createSocketConnection: bindActionCreators(createSocketConnection, dispatch),
     fetchChats: bindActionCreators(fetchChats, dispatch),
     setCurrentChat: bindActionCreators(setCurrentChat, dispatch),
     setCurrentUser: bindActionCreators(setCurrentUser, dispatch)

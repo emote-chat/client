@@ -4,6 +4,7 @@ import {
     handleResponse,
     addAuthHeader
 } from '../helpers/api';
+import io from 'socket.io-client';
 
 export const setCurrentChat = (chat) => {
     return {
@@ -40,10 +41,10 @@ const createChat = (data) => {
     };
 };
 
-export const createSocketConnection = (data) => {
+export const createSocketConnection = () => {
     return {
         type: types.CREATE_SOCKET_CONNECTION,
-        payload: data
+        payload: io(baseUrl.slice(0, baseUrl.search('api')))
     };
 };
 

@@ -41,9 +41,6 @@ import {
     fetchRemoveUserFromChat
 } from '../actions/chats';
 
-import io from 'socket.io-client';
-import { baseUrl } from '../constants/api';
-
 import { ChatMessage } from '../components/ChatMessage';
 import { EmojiMenu } from '../components/EmojiMenu';
 
@@ -59,14 +56,12 @@ class ChatScreen extends React.Component {
             selectedMessage: null,
             inputText: ''
         };
-
-        this.socket = io(baseUrl.slice(0, baseUrl.search('api')));
-        
-        this.props.createSocketConnection(this.socket);
     }
     
     componentDidMount() {
         const { 
+            socket,
+            fetchMessages,
             navigation, 
             createMessage, 
             addReaction, 
@@ -75,33 +70,34 @@ class ChatScreen extends React.Component {
         } = this.props;
         const cid = navigation.getParam('chatId');
         
-        this.props.fetchMessages(cid);
+        fetchMessages(cid);
         
-        this.socket.emit('joinChat', cid);
+        socket.emit('joinChat', cid);
 
-        this.socket.on('receiveMessage', (data) => {
+        socket.on('receiveMessage', (data) => {
             createMessage(data);
         });
 
-        this.socket.on('receiveReaction', (data) => {
+        socket.on('receiveReaction', (data) => {
             addReaction(data);
         });
 
-        this.socket.on('receiveAddedUser', (data) => {
+        socket.on('receiveAddedUser', (data) => {
             addUserToChat(data);
         });
 
-        this.socket.on('receiveRemovedUser', (data) => {
+        socket.on('receiveRemovedUser', (data) => {
             removeUserFromChat(data);
         });
 
-        this.socket.on('removedSelf', () => {
+        socket.on('removedSelf', () => {
             this.displayToast();
         });
     }
 
     componentWillUnmount() {
-        this.socket.disconnect();
+        const { socket, currentChat } = this.props;
+        socket.emit('leaveChat', currentChat.id);
     }
 
     displayToast() {
