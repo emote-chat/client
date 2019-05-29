@@ -10,14 +10,19 @@
 <!-- update later with screenshot or gif of application -->
 ![header](https://user-images.githubusercontent.com/29691658/56085479-a48e0c00-5e09-11e9-9a68-08c8d5cf93d0.png)
 
-## Installation
+## Setup
 
-OS X, Linux and Windows:
-
+### Installation
 ```sh
 npm install
-expo start
+npm install -g expo-cli
 ```
+
+### Run Expo Client
+```sh
+npm start
+```
+* You have the option of opening the app on your computer's mobile device simulator and/or your cellphone (the latter will require downloading the expo app for [iOS](https://itunes.apple.com/app/apple-store/id982107779) or [Android](https://play.google.com/store/apps/details?id=host.exp.exponent&referrer=www) and signing up for an account).
 
 <!-- ## Usage example -->
 
@@ -49,14 +54,6 @@ npm test
 * 0.0.1
     * Work in progress -->
 
-## Meta
-
-* Sonam Kindy – [@sonamdkindy](https://github.com/sonamdkindy)
-* Eric Newtoner – [@ernewtoner](https://github.com/ernewtoner)
-* Michele Larson – [@mnicole](https://github.com/mnicole)
-
-Distributed under the Apache v2.0 license. See the [LICENSE](LICENSE) file for more information.
-
 ## Contributing
 
 1. [Fork](https://help.github.com/en/articles/fork-a-repo#fork-an-example-repository) the repository
@@ -64,6 +61,15 @@ Distributed under the Apache v2.0 license. See the [LICENSE](LICENSE) file for m
 3. Commit your changes to the forked repo (`git commit -am 'Added fooBar that does x, y, z'`)
 4. Push the branch back to your forked repo (`git push origin feature/fooBar`)
 5. Create a [pull request from your fork](https://help.github.com/en/articles/creating-a-pull-request-from-a-fork)
+
+## Contributors
+
+* Sonam Kindy – [@sonamdkindy](https://github.com/sonamdkindy)
+* Michele Larson – [@mnicole](https://github.com/mnicole)
+* Eric Newtoner – [@ernewtoner](https://github.com/ernewtoner)
+
+## License
+Distributed under the Apache v2.0 license. See the [LICENSE](LICENSE) for more information.
 
 ## Resources
 * README template used is located [here](https://github.com/dbader/readme-template)
