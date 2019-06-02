@@ -13,6 +13,13 @@ export const setCurrentChat = (chat) => {
     };
 };
 
+const setError = (error) => {
+    return {
+        type: types.SET_ERROR,
+        payload: error
+    };
+};
+
 const getChats = (data) => {
     return {
         type: types.GET_CHATS,
@@ -55,6 +62,13 @@ export const addReaction = (data) => {
     };
 };
 
+export const setFoundUser = (data) => {
+    return {
+        type: types.SET_FOUND_USER,
+        payload: data
+    };
+};
+
 export const addUserToChat = (data) => {
     return {
         type: types.ADD_USER_TO_CHAT,
@@ -88,7 +102,7 @@ const socketAddReaction = (socket, data) => {
     }
 }
 
-const socketAddUserToChat= (socket, data) => {
+const socketAddUserToChat = (socket, data) => {
     return async () => {
         return await socket.emit('addUserToChat', data);
     }
@@ -101,7 +115,7 @@ const socketRemoveUserFromChat = (socket, data) => {
 }
 
 export const fetchChats = () => {
-    return async (dispatch, getState) => {
+    return async (dispatch) => {
         const headers = await addAuthHeader();
         return fetch(`${baseUrl}chat`, {
             headers
@@ -110,12 +124,15 @@ export const fetchChats = () => {
             .then((data) => {
                 dispatch(getChats(data));
             })
-            .catch((error) => console.log('Error:', error));
+            .catch((error) => {
+                console.log('Error:', error);
+                dispatch(setError(error));
+            });
     };
 };
 
 export const fetchMessages = (cid) => {
-    return async (dispatch, getState) => {
+    return async (dispatch) => {
         const headers = await addAuthHeader();
         return fetch(`${baseUrl}chat/${cid}`, {
             headers
@@ -124,7 +141,10 @@ export const fetchMessages = (cid) => {
             .then((data) => {
                 dispatch(getMessages(data));
             })
-            .catch((error) => console.log('Error:', error));
+            .catch((error) => {
+                console.log('Error:', error);
+                dispatch(setError(error));
+            });
     };
 };
 
@@ -140,7 +160,27 @@ export const fetchCreateChat = (name) => {
             .then((data) => {
                 dispatch(createChat(data));
             })
-            .catch((error) => console.log('Error:', error));
+            .catch((error) => {
+                console.log('Error:', error);
+                dispatch(setError(error));
+            });
+    };
+};
+
+export const fetchFindUserByEmail = (email) => {
+    return async (dispatch) => {
+        const headers = await addAuthHeader();
+        return fetch(`${baseUrl}user/${email}`, {
+            headers
+        })
+            .then(handleResponse)
+            .then((data) => {
+                dispatch(setFoundUser(data));
+            })
+            .catch((error) => {
+                console.log('Error:', error);
+                dispatch(setError(error));
+            });
     };
 };
 
@@ -158,7 +198,10 @@ export const fetchAddUserToChat = (socket, cid, uid) => {
                 dispatch(addUserToChat(data));
                 dispatch(socketAddUserToChat(socket, data));
             })
-            .catch((error) => console.log('Error:', error));
+            .catch((error) => {
+                console.log('Error:', error);
+                dispatch(setError(error));
+            });
     };
 };
 
@@ -178,7 +221,10 @@ export const fetchRemoveUserFromChat = (socket, cid, uid, isSelf = false) => {
                 }
                 dispatch(socketRemoveUserFromChat(socket, data));
             })
-            .catch((error) => console.log('Error:', error));
+            .catch((error) => {
+                console.log('Error:', error);
+                dispatch(setError(error));
+            });
     };
 };
 
@@ -196,7 +242,10 @@ export const fetchAddReaction = (socket, chatId, messageId, emoji) => {
                 dispatch(addReaction(data));
                 dispatch(socketAddReaction(socket, data));
             })
-            .catch((error) => console.log('Error:', error));
+            .catch((error) => {
+                console.log('Error:', error);
+                dispatch(setError(error));
+            });
     };
 };
 
@@ -213,6 +262,9 @@ export const fetchCreateMessage = (socket, cid, text) => {
                 dispatch(createMessage(data));
                 dispatch(socketCreateMessage(socket, data));
             })
-            .catch((error) => console.log('Error:', error));
+            .catch((error) => {
+                console.log('Error:', error);
+                dispatch(setError(error));
+            });
     };
 };

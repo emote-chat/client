@@ -3,8 +3,10 @@ import * as types from '../constants/actionTypes';
 const chatsInitialState = {
     currentChat: null,
     chats: [],
+    foundUser: null,
     addedUser: null,
-    socket: null
+    socket: null,
+    error: null
 };
 
 function chatsReducer(state = chatsInitialState, action) {
@@ -22,6 +24,16 @@ function chatsReducer(state = chatsInitialState, action) {
                 currentChat: payload
             };
 
+        case types.SET_ERROR:
+            console.log('in reducer set error');
+            console.log(payload);
+            return {
+                ...state,
+                error: payload,
+                foundUser: null,
+                addedUser: null
+            };
+
         case types.CREATE_CHAT:
             return {
                 ...state,
@@ -34,9 +46,16 @@ function chatsReducer(state = chatsInitialState, action) {
                 socket: payload
             }
 
+        case types.SET_FOUND_USER:
+            return {
+                ...state,
+                foundUser: payload,
+                addedUser: null
+            }
+
         case types.ADD_USER_TO_CHAT:
             const { id, display_name: displayName, chats_id: chatId } = payload;
-            
+
             const user = {
                 id,
                 displayName
@@ -50,12 +69,13 @@ function chatsReducer(state = chatsInitialState, action) {
             return {
                 ...state,
                 addedUser: user,
+                foundUser: null,
                 chats: state.chats.map(
                     (chat) => chat.id === chatId ? updatedChatWithUser : chat
                 ),
                 currentChat: updatedChatWithUser
             };
-        
+
         case types.REMOVE_SELF_FROM_CHAT:
             return {
                 ...state,
@@ -65,8 +85,8 @@ function chatsReducer(state = chatsInitialState, action) {
             }
 
         case types.REMOVE_USER_FROM_CHAT:
-            const updatedChatWithoutUser = { 
-                ...Object.assign({}, state.currentChat), 
+            const updatedChatWithoutUser = {
+                ...Object.assign({}, state.currentChat),
                 users: state.currentChat.users.filter(
                     user => user.id !== payload.users_id
                 )

@@ -21,6 +21,7 @@ import {
     Icon,
     Text,
     ListItem,
+    Toast
 } from 'native-base';
 
 import {
@@ -34,6 +35,10 @@ class ChatsScreen extends React.Component {
     static navigationOptions = {
         header: null
     };
+
+    clearAsyncStorage = async () => {
+        await AsyncStorage.clear();
+    }
 
     // Get user info from AsyncStorage and store in redux state
     getUser = async () => {
@@ -54,14 +59,45 @@ class ChatsScreen extends React.Component {
     };
 
     componentDidMount() {
-        if (!this.props.currentUser) {
+        const {
+            currentUser,
+            setCurrentUser,
+            createSocketConnection,
+            fetchChats
+        } = this.props;
+
+        if (!currentUser) {
             this.getUser().then((user) =>
-                this.props.setCurrentUser(user)
+                setCurrentUser(user)
             );
         }
 
-        this.props.createSocketConnection();
-        this.props.fetchChats();
+        createSocketConnection();
+        fetchChats();
+    }
+
+    componentDidUpdate(prevProps) {
+        const { error, navigation } = this.props;
+
+        if (error && prevProps.error !== error && error.status === 401) {
+            Toast.show({
+                text: `${error.message}; you must login again.`,
+                buttonText: "Okay",
+                type: "danger",
+                duration: 2000,
+                onClose: () => {
+                    this.clearAsyncStorage();
+                    navigation.navigate('Auth')
+                }
+            });
+        } else if (error && prevProps.error !== error) {
+            Toast.show({
+                text: `${error.message}; try again.`,
+                buttonText: "Okay",
+                type: "danger",
+                duration: 2000
+            });
+        }
     }
 
     renderChats = ({ item, index }) => {
@@ -133,10 +169,11 @@ class ChatsScreen extends React.Component {
 }
 
 const mapStateToProps = ({
-    chatsReducer: { chats },
+    chatsReducer: { chats, error },
     userReducer: { currentUser }
 }) => {
     return {
+        error,
         chats,
         currentUser
     };
