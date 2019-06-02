@@ -77,9 +77,12 @@ class ChatsScreen extends React.Component {
     }
 
     componentDidUpdate(prevProps) {
-        const { error, navigation } = this.props;
+        const { error, navigation, socket } = this.props;
 
         if (error && prevProps.error !== error && error.status === 401) {
+            if (socket) {
+                socket.disconnect();
+            }
             Toast.show({
                 text: `${error.message}; you must login again.`,
                 buttonText: "Okay",
