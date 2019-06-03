@@ -27,7 +27,7 @@ import {
     Input,
     Toast
 } from 'native-base';
-import { Icon as MaterialIcon } from 'react-native-elements';
+import { Icon as MaterialIcon, Overlay } from 'react-native-elements';
 
 import {
     createMessage,
@@ -61,22 +61,22 @@ class ChatScreen extends React.Component {
         };
 
         this.socket = io(baseUrl.slice(0, baseUrl.search('api')));
-        
+
         this.props.createSocketConnection(this.socket);
     }
-    
+
     componentDidMount() {
-        const { 
-            navigation, 
-            createMessage, 
-            addReaction, 
-            addUserToChat, 
+        const {
+            navigation,
+            createMessage,
+            addReaction,
+            addUserToChat,
             removeUserFromChat
         } = this.props;
         const cid = navigation.getParam('chatId');
-        
+
         this.props.fetchMessages(cid);
-        
+
         this.socket.emit('joinChat', cid);
 
         this.socket.on('receiveMessage', (data) => {
@@ -105,16 +105,14 @@ class ChatScreen extends React.Component {
     }
 
     displayToast() {
-        const {
-            currentChat,
-            currentUser,
-            navigation
-        } = this.props;
+        const { currentChat, currentUser, navigation } = this.props;
 
         Toast.show({
-            text: `${currentUser.display_name}, you have left ${currentChat.name}`,
-            buttonText: "Okay",
-            type: "success",
+            text: `${currentUser.display_name}, you have left ${
+                currentChat.name
+            }`,
+            buttonText: 'Okay',
+            type: 'success',
             duration: 2000,
             onClose: () => navigation.navigate('Chats')
         });
@@ -128,44 +126,42 @@ class ChatScreen extends React.Component {
 
         fetchCreateMessage(this.socket, cid, inputText);
 
-        this.setState({ 
-            inputText: '' 
+        this.setState({
+            inputText: ''
         });
     };
 
     confirmLeavingChat = () => {
-        const { 
-            currentChat, 
-            currentUser, 
-            navigation, 
-            fetchRemoveUserFromChat 
+        const {
+            currentChat,
+            currentUser,
+            navigation,
+            fetchRemoveUserFromChat
         } = this.props;
 
-        const alertTitle = `Leaving chat ${navigation.getParam('chatName')}`;
+        const alertTitle = `Leaving chat ${navigation.getParam(
+            'chatName'
+        )}`;
         const alertBody = 'Are you sure you want to leave?';
-        Alert.alert(
-            alertTitle,
-            alertBody,
-            [
-                {
-                    text: 'Cancel',
-                    style: 'cancel',
-                },
-                { 
-                    text: 'OK', 
-                    onPress: () => {
-                        const isSelf = true;
-                        fetchRemoveUserFromChat(
-                            this.socket, 
-                            currentChat.id, 
-                            currentUser.id, 
-                            isSelf
-                        )
-                    }
+        Alert.alert(alertTitle, alertBody, [
+            {
+                text: 'Cancel',
+                style: 'cancel'
+            },
+            {
+                text: 'OK',
+                onPress: () => {
+                    const isSelf = true;
+                    fetchRemoveUserFromChat(
+                        this.socket,
+                        currentChat.id,
+                        currentUser.id,
+                        isSelf
+                    );
                 }
-            ]
-        );
-    }
+            }
+        ]);
+    };
 
     render() {
         const {
@@ -186,9 +182,7 @@ class ChatScreen extends React.Component {
                         <Button transparent>
                             <Icon
                                 name="md-arrow-back"
-                                onPress={() =>
-                                    navigation.pop()
-                                }
+                                onPress={() => navigation.pop()}
                             />
                         </Button>
                     </Left>
@@ -201,9 +195,12 @@ class ChatScreen extends React.Component {
                         <Button
                             transparent
                             onPress={() =>
-                                this.props.navigation.navigate('AddUserToChat', {
-                                    chatId: currentChat.id
-                                })
+                                this.props.navigation.navigate(
+                                    'AddUserToChat',
+                                    {
+                                        chatId: currentChat.id
+                                    }
+                                )
                             }>
                             <Icon name="person-add" />
                         </Button>
@@ -222,67 +219,93 @@ class ChatScreen extends React.Component {
                 <ScrollView
                     style={styles.chatContainer}
                     contentContainerStyle={styles.contentContainer}
-                    ref={ref => this.scrollView = ref}
+                    ref={(ref) => (this.scrollView = ref)}
                     onContentSizeChange={() => {
-                        this.scrollView.scrollToEnd({ animated: true });
+                        this.scrollView.scrollToEnd({
+                            animated: true
+                        });
                     }}>
                     <Container>
                         <Content>
-                            {messages && messages.map((message) => {
-                                    const mId = message.id;
-                                    const _handleLongPress = () => {
-                                        this.setState({
-                                            selectedMessage: mId
-                                        });
-                                    };
+                            {messages.length
+                                ? messages.map((message) => {
+                                      const mId = message.id;
+                                      const _handleLongPress = () => {
+                                          this.setState({
+                                              selectedMessage: mId
+                                          });
+                                      };
 
-                                    const handleEmojiClick = (emoji) => {
-                                        this.props.fetchAddReaction(
-                                            this.socket,
-                                            currentChat.id,
-                                            mId,
-                                            emoji
-                                        );
-                                        this.setState({
-                                            selectedMessage: null
-                                        });
-                                    };
+                                      const handleEmojiClick = (
+                                          emoji
+                                      ) => {
+                                          this.props.fetchAddReaction(
+                                              this.socket,
+                                              currentChat.id,
+                                              mId,
+                                              emoji
+                                          );
+                                          this.setState({
+                                              selectedMessage: null
+                                          });
+                                      };
 
-                                    const isOpen = selectedMessage == mId;
-                                    const isSelf = currentUser &&
-                                        currentUser.id == message.users_id;
-                                    const user = currentChat &&
-                                        currentChat.users.find(
-                                            ({ id }) => id == message.users_id
-                                        );
-                                    const displayName = user && user.display_name;
+                                      const isOpen =
+                                          selectedMessage == mId;
+                                      const isSelf =
+                                          currentUser &&
+                                          currentUser.id ==
+                                              message.users_id;
+                                      const user =
+                                          currentChat &&
+                                          currentChat.users.find(
+                                              ({ id }) =>
+                                                  id ==
+                                                  message.users_id
+                                          );
+                                      const displayName =
+                                          user && user.display_name;
 
-                                    return (
-                                        <TouchableOpacity
-                                            key={mId}
-                                            onLongPress={
-                                                _handleLongPress
-                                            }>
-                                            <ChatMessage
-                                                key={mId}
-                                                message={message}
-                                                isSelf={isSelf}
-                                                displayName={displayName}
-                                                users={
-                                                    currentChat &&
-                                                    currentChat.users
-                                                }
-                                            />
-                                            {isOpen && (
-                                                <EmojiMenu
-                                                    onClick={
-                                                        handleEmojiClick
-                                                    }
-                                                />
-                                            )}
-                                        </TouchableOpacity>
-                                    );
-                                })}
+                                      return (
+                                          <TouchableOpacity
+                                              key={mId}
+                                              onLongPress={
+                                                  _handleLongPress
+                                              }>
+                                              <ChatMessage
+                                                  key={mId}
+                                                  message={message}
+                                                  isSelf={isSelf}
+                                                  displayName={
+                                                      displayName
+                                                  }
+                                                  users={
+                                                      currentChat &&
+                                                      currentChat.users
+                                                  }
+                                              />
+                                              <Overlay
+                                                  isVisible={isOpen}
+                                                  height={200}
+                                                  onBackdropPress={() =>
+                                                      this.setState({
+                                                          selectedMessage: null
+                                                      })
+                                                  }>
+                                                  <EmojiMenu
+                                                      recommended={
+                                                          message.recommended ||
+                                                          []
+                                                      }
+                                                      onClick={
+                                                          handleEmojiClick
+                                                      }
+                                                  />
+                                              </Overlay>
+                                          </TouchableOpacity>
+                                      );
+                                  })
+                                : null}
                         </Content>
                     </Container>
                 </ScrollView>
@@ -291,7 +314,7 @@ class ChatScreen extends React.Component {
                         position: 'absolute',
                         left: 0,
                         right: 0,
-                        bottom: 0,
+                        bottom: 0
                     }}
                     behavior="position">
                     <Form style={styles.content}>
@@ -331,15 +354,27 @@ const mapStateToProps = ({
 };
 
 const mapDispatchToProps = (dispatch) => ({
-    createSocketConnection: bindActionCreators(createSocketConnection, dispatch),
+    createSocketConnection: bindActionCreators(
+        createSocketConnection,
+        dispatch
+    ),
     addReaction: bindActionCreators(addReaction, dispatch),
     addUserToChat: bindActionCreators(addUserToChat, dispatch),
-    removeUserFromChat: bindActionCreators(removeUserFromChat, dispatch),
+    removeUserFromChat: bindActionCreators(
+        removeUserFromChat,
+        dispatch
+    ),
     createMessage: bindActionCreators(createMessage, dispatch),
     fetchMessages: bindActionCreators(fetchMessages, dispatch),
-    fetchRemoveUserFromChat: bindActionCreators(fetchRemoveUserFromChat, dispatch),
+    fetchRemoveUserFromChat: bindActionCreators(
+        fetchRemoveUserFromChat,
+        dispatch
+    ),
     fetchAddReaction: bindActionCreators(fetchAddReaction, dispatch),
-    fetchCreateMessage: bindActionCreators(fetchCreateMessage, dispatch)
+    fetchCreateMessage: bindActionCreators(
+        fetchCreateMessage,
+        dispatch
+    )
 });
 
 const styles = StyleSheet.create({
@@ -356,8 +391,7 @@ const styles = StyleSheet.create({
     chatButton: {
         top: 3
     },
-    contentContainer: {
-    },
+    contentContainer: {},
     tabBarInfoContainer: {
         position: 'absolute',
         bottom: 0,

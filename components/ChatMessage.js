@@ -1,16 +1,18 @@
 import React from 'react';
-import { StyleSheet, View } from 'react-native';
-import { Text, Card, CardItem } from 'native-base';
+import { StyleSheet, Text } from 'react-native';
+import { Card, CardItem } from 'native-base';
+import { Overlay } from 'react-native-elements';
+
+import { EmojiUsers } from './EmojiUsers';
 
 export class ChatMessage extends React.Component {
     state = {
-        currentEmojiSelected: null
+        isOpen: false
     };
 
-    _handleKeyPress = (id) =>
-        this.setState(({ currentEmojiSelected }) => ({
-            currentEmojiSelected:
-                currentEmojiSelected === id ? null : id
+    _handleKeyPress = () =>
+        this.setState(({ isOpen }) => ({
+            isOpen: !isOpen
         }));
 
     render() {
@@ -28,30 +30,32 @@ export class ChatMessage extends React.Component {
                 </Text>
                 <CardItem footer style={styles.footer}>
                     {message.reactions &&
-                        message.reactions.map(
-                            ({ emoji, users_id }, index) => {
-                                const onPress = () =>
-                                    this._handleKeyPress(emoji);
-                                const reactionUser = users.find(
-                                    (u) => u.id === users_id
-                                );
+                        Object.keys(message.reactions).map(
+                            (emoji, index) => {
                                 return (
-                                    <View key={index}>
-                                        <Text onPress={onPress}>
-                                            {this.state
-                                                .currentEmojiSelected !==
-                                            emoji
-                                                ? emoji
-                                                : reactionUser
-                                                    ? `${emoji}: ${
-                                                          reactionUser.display_name
-                                                      }`
-                                                    : ''}
-                                        </Text>
-                                    </View>
+                                    <Text
+                                        key={index}
+                                        style={styles.emoji}
+                                        onPress={
+                                            this._handleKeyPress
+                                        }>
+                                        {`${emoji} ${
+                                            message.reactions[emoji]
+                                                .length
+                                        }`}
+                                    </Text>
                                 );
                             }
                         )}
+                    <Overlay
+                        isVisible={this.state.isOpen}
+                        height={'auto'}
+                        onBackdropPress={this._handleKeyPress}>
+                        <EmojiUsers
+                            emojis={message.reactions}
+                            allUsers={users}
+                        />
+                    </Overlay>
                 </CardItem>
             </Card>
         );
@@ -69,6 +73,9 @@ const styles = StyleSheet.create({
     },
     user: {
         textAlign: 'left'
+    },
+    emoji: {
+        paddingRight: 10
     },
     self: {
         textAlign: 'right'

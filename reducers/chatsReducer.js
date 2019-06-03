@@ -32,11 +32,14 @@ function chatsReducer(state = chatsInitialState, action) {
             return {
                 ...state,
                 socket: payload
-            }
+            };
 
         case types.ADD_USER_TO_CHAT:
-            const { id, display_name: displayName, chats_id: chatId } = payload;
-            
+            const {
+                id,
+                display_name: displayName,
+                chats_id: chatId
+            } = payload;
             const user = {
                 id,
                 displayName
@@ -51,34 +54,40 @@ function chatsReducer(state = chatsInitialState, action) {
                 ...state,
                 addedUser: user,
                 chats: state.chats.map(
-                    (chat) => chat.id === chatId ? updatedChatWithUser : chat
+                    (chat) =>
+                        chat.id === chatId
+                            ? updatedChatWithUser
+                            : chat
                 ),
                 currentChat: updatedChatWithUser
             };
-        
+
         case types.REMOVE_SELF_FROM_CHAT:
             return {
                 ...state,
                 chats: state.chats.filter(
                     (chat) => chat.id !== payload.chats_id
                 )
-            }
+            };
 
         case types.REMOVE_USER_FROM_CHAT:
-            const updatedChatWithoutUser = { 
-                ...Object.assign({}, state.currentChat), 
+            const updatedChatWithoutUser = {
+                ...Object.assign({}, state.currentChat),
                 users: state.currentChat.users.filter(
-                    user => user.id !== payload.users_id
+                    (user) => user.id !== payload.users_id
                 )
             };
 
             return {
                 ...state,
                 chats: state.chats.map(
-                    (chat) => chat.id === payload.chats_id ? updatedChatWithoutUser : chat
+                    (chat) =>
+                        chat.id === payload.chats_id
+                            ? updatedChatWithoutUser
+                            : chat
                 ),
                 currentChat: updatedChatWithoutUser
-            }
+            };
 
         default:
             return state;
