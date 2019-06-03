@@ -25,8 +25,6 @@ function chatsReducer(state = chatsInitialState, action) {
             };
 
         case types.SET_ERROR:
-            console.log('in reducer set error');
-            console.log(payload);
             return {
                 ...state,
                 error: payload,
