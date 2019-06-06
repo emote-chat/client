@@ -125,16 +125,15 @@ export const fetchChats = () => {
                 dispatch(getChats(data));
             })
             .catch((error) => {
-                console.log('Error:', error);
                 dispatch(setError(error));
             });
     };
 };
 
-export const fetchMessages = (cid) => {
+export const fetchMessages = (chatId) => {
     return async (dispatch) => {
         const headers = await addAuthHeader();
-        return fetch(`${baseUrl}chat/${cid}`, {
+        return fetch(`${baseUrl}chat/${chatId}`, {
             headers
         })
             .then(handleResponse)
@@ -142,7 +141,6 @@ export const fetchMessages = (cid) => {
                 dispatch(getMessages(data));
             })
             .catch((error) => {
-                console.log('Error:', error);
                 dispatch(setError(error));
             });
     };
@@ -161,7 +159,6 @@ export const fetchCreateChat = (name) => {
                 dispatch(createChat(data));
             })
             .catch((error) => {
-                console.log('Error:', error);
                 dispatch(setError(error));
             });
     };
@@ -178,37 +175,35 @@ export const fetchFindUserByEmail = (email) => {
                 dispatch(setFoundUser(data));
             })
             .catch((error) => {
-                console.log('Error:', error);
                 dispatch(setError(error));
             });
     };
 };
 
-export const fetchAddUserToChat = (socket, cid, uid) => {
+export const fetchAddUserToChat = (socket, chatId, userId) => {
     return async (dispatch) => {
         const headers = await addAuthHeader();
-        return fetch(`${baseUrl}chat/${cid}/${uid}`, {
+        return fetch(`${baseUrl}chat/${chatId}/${userId}`, {
             method: 'POST',
             headers
         })
             .then(handleResponse)
             .then((data) => {
                 // add chat id to payload
-                data.chats_id = cid;
+                data.chats_id = chatId;
                 dispatch(addUserToChat(data));
                 dispatch(socketAddUserToChat(socket, data));
             })
             .catch((error) => {
-                console.log('Error:', error);
                 dispatch(setError(error));
             });
     };
 };
 
-export const fetchRemoveUserFromChat = (socket, cid, uid, isSelf = false) => {
+export const fetchRemoveUserFromChat = (socket, chatId, userId, isSelf = false) => {
     return async (dispatch) => {
         const headers = await addAuthHeader();
-        return fetch(`${baseUrl}chat/${cid}/${uid}`, {
+        return fetch(`${baseUrl}chat/${chatId}/${userId}`, {
             method: 'DELETE',
             headers
         })
@@ -222,7 +217,6 @@ export const fetchRemoveUserFromChat = (socket, cid, uid, isSelf = false) => {
                 dispatch(socketRemoveUserFromChat(socket, data));
             })
             .catch((error) => {
-                console.log('Error:', error);
                 dispatch(setError(error));
             });
     };
@@ -238,12 +232,12 @@ export const fetchAddReaction = (socket, chatId, messageId, emoji) => {
         })
             .then(handleResponse)
             .then((data) => {
+                // add chat id to payload
                 data.chats_id = chatId;
                 dispatch(addReaction(data));
                 dispatch(socketAddReaction(socket, data));
             })
             .catch((error) => {
-                console.log('Error:', error);
                 dispatch(setError(error));
             });
     };
@@ -263,7 +257,6 @@ export const fetchCreateMessage = (socket, cid, text) => {
                 dispatch(socketCreateMessage(socket, data));
             })
             .catch((error) => {
-                console.log('Error:', error);
                 dispatch(setError(error));
             });
     };

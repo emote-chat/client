@@ -60,7 +60,7 @@ function chatsReducer(state = chatsInitialState, action) {
             };
 
             const updatedChatWithUser = {
-                ...Object.assign({}, state.currentChat),
+                ...state.currentChat,
                 users: state.currentChat.users.concat(user)
             };
 
@@ -84,7 +84,7 @@ function chatsReducer(state = chatsInitialState, action) {
 
         case types.REMOVE_USER_FROM_CHAT:
             const updatedChatWithoutUser = {
-                ...Object.assign({}, state.currentChat),
+                ...state.currentChat,
                 users: state.currentChat.users.filter(
                     user => user.id !== payload.users_id
                 )

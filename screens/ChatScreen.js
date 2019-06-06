@@ -101,6 +101,7 @@ class ChatScreen extends React.Component {
     }
 
     componentDidUpdate(prevProps) {
+        const { error } = this.props;
         if (error && prevProps.error !== error) {
             Toast.show({
                 text: `${error.message}; try again.`,
