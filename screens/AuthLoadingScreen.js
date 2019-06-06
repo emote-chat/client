@@ -1,26 +1,61 @@
 import React from 'react';
+import { connect } from 'react-redux';
 import {
     ActivityIndicator,
     AsyncStorage,
     StatusBar,
-    StyleSheet,
     View
 } from 'react-native';
+import { Toast } from 'native-base';
 
-export default class AuthLoadingScreen extends React.Component {
+class AuthLoadingScreen extends React.Component {
     constructor(props) {
         super(props);
+
+        this.state = {
+            socket: this.props.socket,
+            navigation: this.props.navigation
+        }
+
         this._bootstrapAsync();
     }
 
+    clearAsyncStorage = async () => {
+        await AsyncStorage.clear();
+    }
+
     _bootstrapAsync = async () => {
+        const { socket, navigation } = this.state;
         const user = await AsyncStorage.getItem('user');
-        if (user) {
-            const { userToken } = JSON.parse(user);
-            this.props.navigation.navigate('Main');
-        } else {
-            this.props.navigation.navigate('Auth');
+
+        if (!user) {
+            navigation.navigate('Auth');
+            return;
         }
+
+        const { expirationTime } = JSON.parse(user);
+        if (expirationTime > Date.now()) {
+            // user has a valid (not yet expired) token
+            navigation.navigate('Main');
+            return;
+        }
+
+        // user has invalid/expired token
+        if (socket) {
+            socket.disconnect();
+        }
+
+        Toast.show({
+            text: "Invalid/expired token; you must login again.",
+            buttonText: "Okay",
+            type: "danger",
+            duration: 2000,
+            position: "top",
+            onClose: () => {
+                this.clearAsyncStorage();
+                navigation.navigate('Auth');
+            }
+        });
     };
 
     render() {
@@ -32,3 +67,16 @@ export default class AuthLoadingScreen extends React.Component {
         );
     }
 }
+
+const mapStateToProps = ({
+    chatsReducer: { socket }
+}) => {
+    return {
+        socket
+    };
+};
+
+export default connect(
+    mapStateToProps,
+    null
+)(AuthLoadingScreen);

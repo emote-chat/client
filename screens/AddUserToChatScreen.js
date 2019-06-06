@@ -25,28 +25,23 @@ import {
     Toast
 } from 'native-base';
 
-import { baseUrl } from '../constants/api';
-
-import { fetchAddUserToChat } from '../actions/chats';
-import { handleResponse, addAuthHeader } from '../helpers/api';
-
-import { ErrorMessage } from '../components/ErrorMessage';
+import { setFoundUser, fetchFindUserByEmail, fetchAddUserToChat } from '../actions/chats';
 
 const AddUserForm = ({ addUserToChat, cid: chatId, user, socket }) => {
-    const { 
-        id: userId, 
+    const {
+        id: userId,
         display_name: displayName
     } = user;
-    
+
     return (
         <Form style={styles.contentContainer}>
             <Item stackedLabel>
                 <Label>User display name</Label>
                 <Text>
-                    { displayName }
+                    {displayName}
                 </Text>
             </Item>
-            <Button 
+            <Button
                 full
                 onPress={() => addUserToChat(socket, chatId, userId)}>
                 <Text>Add To Chat</Text>
@@ -67,48 +62,48 @@ class AddUserToChatScreen extends React.Component {
     };
 
     _submitForm = async () => {
-        // clear previous error message
-        this.setState({
-            errorMessage: ''
-        });
-        
         const { email } = this.state;
-        const headers = await addAuthHeader();
-        return fetch(`${baseUrl}user/${email}`, {
-            headers
-        })
-            .then(handleResponse)
-            .then((data) => {
-                // if successful, clear email and update foundUser
-                this.setState({
-                    foundUser: data,
-                    email: ''
-                });
-            })
-            .catch(({ message }) => {
-                // if error, update error message
-                this.setState({
-                    errorMessage: message
-                });
-            });
+        const { fetchFindUserByEmail } = this.props;
+
+        await fetchFindUserByEmail(email);
+
+        this.setState({
+            email: ''
+        });
     };
 
     componentDidUpdate(prevProps) {
+        const {
+            addedUser,
+            navigation,
+            error
+        } = this.props;
+
         // if adding user successful, display toast and navigate back to chat
-        if (prevProps.addedUser !== this.props.addedUser) {
+        if (addedUser && prevProps.addedUser !== addedUser) {
             Toast.show({
-                text: `${this.props.addedUser.displayName} added to chat`,
+                text: `${addedUser.displayName} added to chat`,
                 buttonText: "Okay",
                 type: "success",
                 duration: 2000,
-                onClose: () => this.props.navigation.navigate('Chat')
+                onClose: () => navigation.navigate('Chat')
+            });
+        }
+
+        // if error, display toast (and stay on same screen)
+        if (error && prevProps.error !== error) {
+            Toast.show({
+                text: `${error.message}; try again.`,
+                buttonText: "Okay",
+                type: "danger",
+                duration: 2000
             });
         }
     }
 
     render() {
-        const { navigation, fetchAddUserToChat, socket } = this.props;
-        const { foundUser, email, errorMessage } = this.state;
+        const { foundUser, navigation, fetchAddUserToChat, socket } = this.props;
+        const { email } = this.state;
         return (
             <View style={styles.container}>
                 <Header>
@@ -153,15 +148,14 @@ class AddUserToChatScreen extends React.Component {
                                     <Text>Search</Text>
                                 </Button>
                             </Form>
-                            <ErrorMessage message={errorMessage} />
                             {
-                                foundUser ? 
-                                <AddUserForm 
-                                    addUserToChat={fetchAddUserToChat}
-                                    cid={navigation.getParam('chatId')}
-                                    user={foundUser} 
-                                    socket={socket} 
-                                /> : null
+                                foundUser ?
+                                    <AddUserForm
+                                        addUserToChat={fetchAddUserToChat}
+                                        cid={navigation.getParam('chatId')}
+                                        user={foundUser}
+                                        socket={socket}
+                                    /> : null
                             }
                         </Content>
                     </Container>
@@ -172,15 +166,19 @@ class AddUserToChatScreen extends React.Component {
 }
 
 const mapStateToProps = ({
-    chatsReducer: { addedUser, socket }
+    chatsReducer: { error, foundUser, addedUser, socket }
 }) => {
     return {
+        error,
         socket,
+        foundUser,
         addedUser
     };
 };
 
 const mapDispatchToProps = (dispatch) => ({
+    setFoundUser: bindActionCreators(setFoundUser, dispatch),
+    fetchFindUserByEmail: bindActionCreators(fetchFindUserByEmail, dispatch),
     fetchAddUserToChat: bindActionCreators(fetchAddUserToChat, dispatch)
 });
 

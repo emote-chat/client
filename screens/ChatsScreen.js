@@ -21,11 +21,13 @@ import {
     Icon,
     Text,
     ListItem,
+    Toast
 } from 'native-base';
 
 import {
     fetchChats,
     setCurrentChat,
+    createSocketConnection
 } from '../actions/chats';
 import { setCurrentUser } from '../actions/user';
 
@@ -53,13 +55,34 @@ class ChatsScreen extends React.Component {
     };
 
     componentDidMount() {
-        if (!this.props.currentUser) {
+        const {
+            currentUser,
+            setCurrentUser,
+            createSocketConnection,
+            fetchChats
+        } = this.props;
+
+        if (!currentUser) {
             this.getUser().then((user) =>
-                this.props.setCurrentUser(user)
+                setCurrentUser(user)
             );
         }
 
-        this.props.fetchChats();
+        createSocketConnection();
+        fetchChats();
+    }
+
+    componentDidUpdate(prevProps) {
+        const { error } = this.props;
+
+        if (error && prevProps.error !== error) {
+            Toast.show({
+                text: `${error.message}; try again.`,
+                buttonText: "Okay",
+                type: "danger",
+                duration: 2000
+            });
+        }
     }
 
     renderChats = ({ item, index }) => {
@@ -131,16 +154,18 @@ class ChatsScreen extends React.Component {
 }
 
 const mapStateToProps = ({
-    chatsReducer: { chats },
+    chatsReducer: { chats, error },
     userReducer: { currentUser }
 }) => {
     return {
+        error,
         chats,
         currentUser
     };
 };
 
 const mapDispatchToProps = (dispatch) => ({
+    createSocketConnection: bindActionCreators(createSocketConnection, dispatch),
     fetchChats: bindActionCreators(fetchChats, dispatch),
     setCurrentChat: bindActionCreators(setCurrentChat, dispatch),
     setCurrentUser: bindActionCreators(setCurrentUser, dispatch)

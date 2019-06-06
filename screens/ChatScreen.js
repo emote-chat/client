@@ -41,9 +41,6 @@ import {
     fetchRemoveUserFromChat
 } from '../actions/chats';
 
-import io from 'socket.io-client';
-import { baseUrl } from '../constants/api';
-
 import { ChatMessage } from '../components/ChatMessage';
 import { EmojiMenu } from '../components/EmojiMenu';
 
@@ -59,49 +56,60 @@ class ChatScreen extends React.Component {
             selectedMessage: null,
             inputText: ''
         };
-
-        this.socket = io(baseUrl.slice(0, baseUrl.search('api')));
-        
-        this.props.createSocketConnection(this.socket);
     }
-    
+
     componentDidMount() {
-        const { 
-            navigation, 
-            createMessage, 
-            addReaction, 
-            addUserToChat, 
+        const {
+            socket,
+            fetchMessages,
+            navigation,
+            createMessage,
+            addReaction,
+            addUserToChat,
             removeUserFromChat
         } = this.props;
         const cid = navigation.getParam('chatId');
-        
-        this.props.fetchMessages(cid);
-        
-        this.socket.emit('joinChat', cid);
 
-        this.socket.on('receiveMessage', (data) => {
+        fetchMessages(cid);
+
+        socket.emit('joinChat', cid);
+
+        socket.on('receiveMessage', (data) => {
             createMessage(data);
         });
 
-        this.socket.on('receiveReaction', (data) => {
+        socket.on('receiveReaction', (data) => {
             addReaction(data);
         });
 
-        this.socket.on('receiveAddedUser', (data) => {
+        socket.on('receiveAddedUser', (data) => {
             addUserToChat(data);
         });
 
-        this.socket.on('receiveRemovedUser', (data) => {
+        socket.on('receiveRemovedUser', (data) => {
             removeUserFromChat(data);
         });
 
-        this.socket.on('removedSelf', () => {
+        socket.on('removedSelf', () => {
             this.displayToast();
         });
     }
 
     componentWillUnmount() {
-        this.socket.disconnect();
+        const { socket, currentChat } = this.props;
+        socket.emit('leaveChat', currentChat.id);
+    }
+
+    componentDidUpdate(prevProps) {
+        const { error } = this.props;
+        if (error && prevProps.error !== error) {
+            Toast.show({
+                text: `${error.message}; try again.`,
+                buttonText: "Okay",
+                type: "danger",
+                duration: 2000
+            });
+        }
     }
 
     displayToast() {
@@ -128,17 +136,17 @@ class ChatScreen extends React.Component {
 
         fetchCreateMessage(this.socket, cid, inputText);
 
-        this.setState({ 
-            inputText: '' 
+        this.setState({
+            inputText: ''
         });
     };
 
     confirmLeavingChat = () => {
-        const { 
-            currentChat, 
-            currentUser, 
-            navigation, 
-            fetchRemoveUserFromChat 
+        const {
+            currentChat,
+            currentUser,
+            navigation,
+            fetchRemoveUserFromChat
         } = this.props;
 
         const alertTitle = `Leaving chat ${navigation.getParam('chatName')}`;
@@ -151,14 +159,14 @@ class ChatScreen extends React.Component {
                     text: 'Cancel',
                     style: 'cancel',
                 },
-                { 
-                    text: 'OK', 
+                {
+                    text: 'OK',
                     onPress: () => {
                         const isSelf = true;
                         fetchRemoveUserFromChat(
-                            this.socket, 
-                            currentChat.id, 
-                            currentUser.id, 
+                            this.socket,
+                            currentChat.id,
+                            currentUser.id,
                             isSelf
                         )
                     }
@@ -229,60 +237,60 @@ class ChatScreen extends React.Component {
                     <Container>
                         <Content>
                             {messages && messages.map((message) => {
-                                    const mId = message.id;
-                                    const _handleLongPress = () => {
-                                        this.setState({
-                                            selectedMessage: mId
-                                        });
-                                    };
+                                const mId = message.id;
+                                const _handleLongPress = () => {
+                                    this.setState({
+                                        selectedMessage: mId
+                                    });
+                                };
 
-                                    const handleEmojiClick = (emoji) => {
-                                        this.props.fetchAddReaction(
-                                            this.socket,
-                                            currentChat.id,
-                                            mId,
-                                            emoji
-                                        );
-                                        this.setState({
-                                            selectedMessage: null
-                                        });
-                                    };
+                                const handleEmojiClick = (emoji) => {
+                                    this.props.fetchAddReaction(
+                                        this.socket,
+                                        currentChat.id,
+                                        mId,
+                                        emoji
+                                    );
+                                    this.setState({
+                                        selectedMessage: null
+                                    });
+                                };
 
-                                    const isOpen = selectedMessage == mId;
-                                    const isSelf = currentUser &&
-                                        currentUser.id == message.users_id;
-                                    const user = currentChat &&
-                                        currentChat.users.find(
-                                            ({ id }) => id == message.users_id
-                                        );
-                                    const displayName = user && user.display_name;
+                                const isOpen = selectedMessage == mId;
+                                const isSelf = currentUser &&
+                                    currentUser.id == message.users_id;
+                                const user = currentChat &&
+                                    currentChat.users.find(
+                                        ({ id }) => id == message.users_id
+                                    );
+                                const displayName = user && user.display_name;
 
-                                    return (
-                                        <TouchableOpacity
+                                return (
+                                    <TouchableOpacity
+                                        key={mId}
+                                        onLongPress={
+                                            _handleLongPress
+                                        }>
+                                        <ChatMessage
                                             key={mId}
-                                            onLongPress={
-                                                _handleLongPress
-                                            }>
-                                            <ChatMessage
-                                                key={mId}
-                                                message={message}
-                                                isSelf={isSelf}
-                                                displayName={displayName}
-                                                users={
-                                                    currentChat &&
-                                                    currentChat.users
+                                            message={message}
+                                            isSelf={isSelf}
+                                            displayName={displayName}
+                                            users={
+                                                currentChat &&
+                                                currentChat.users
+                                            }
+                                        />
+                                        {isOpen && (
+                                            <EmojiMenu
+                                                onClick={
+                                                    handleEmojiClick
                                                 }
                                             />
-                                            {isOpen && (
-                                                <EmojiMenu
-                                                    onClick={
-                                                        handleEmojiClick
-                                                    }
-                                                />
-                                            )}
-                                        </TouchableOpacity>
-                                    );
-                                })}
+                                        )}
+                                    </TouchableOpacity>
+                                );
+                            })}
                         </Content>
                     </Container>
                 </ScrollView>
@@ -317,11 +325,12 @@ class ChatScreen extends React.Component {
 }
 
 const mapStateToProps = ({
-    chatsReducer: { currentChat, chats, socket },
+    chatsReducer: { currentChat, chats, socket, error },
     userReducer: { currentUser },
     messageReducer: { messages }
 }) => {
     return {
+        error,
         socket,
         chats,
         currentChat,

@@ -37,7 +37,17 @@ class CreateChatScreen extends React.Component {
     };
 
     componentDidUpdate(prevProps) {
-        const { chats, navigation } = this.props;
+        const { chats, navigation, error } = this.props;
+
+        if (error && prevProps.error !== error) {
+            Toast.show({
+                text: `${error.message}; try again.`,
+                buttonText: "Okay",
+                type: "danger",
+                duration: 2000
+            });
+        }
+
         if (prevProps.chats !== chats) {
             navigation.pop();
         }
@@ -102,9 +112,10 @@ class CreateChatScreen extends React.Component {
 }
 
 const mapStateToProps = ({
-    chatsReducer: { chats }
+    chatsReducer: { error, chats }
 }) => {
     return {
+        error,
         chats
     };
 };
