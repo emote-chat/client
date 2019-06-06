@@ -36,10 +36,6 @@ class ChatsScreen extends React.Component {
         header: null
     };
 
-    clearAsyncStorage = async () => {
-        await AsyncStorage.clear();
-    }
-
     // Get user info from AsyncStorage and store in redux state
     getUser = async () => {
         try {
@@ -77,23 +73,9 @@ class ChatsScreen extends React.Component {
     }
 
     componentDidUpdate(prevProps) {
-        const { error, navigation, socket } = this.props;
+        const { error } = this.props;
 
-        if (error && prevProps.error !== error && error.status === 401) {
-            if (socket) {
-                socket.disconnect();
-            }
-            Toast.show({
-                text: `${error.message}; you must login again.`,
-                buttonText: "Okay",
-                type: "danger",
-                duration: 2000,
-                onClose: () => {
-                    this.clearAsyncStorage();
-                    navigation.navigate('Auth')
-                }
-            });
-        } else if (error && prevProps.error !== error) {
+        if (error && prevProps.error !== error) {
             Toast.show({
                 text: `${error.message}; try again.`,
                 buttonText: "Okay",
