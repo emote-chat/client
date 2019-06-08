@@ -41,9 +41,6 @@ import {
     fetchRemoveUserFromChat
 } from '../actions/chats';
 
-import io from 'socket.io-client';
-import { baseUrl } from '../constants/api';
-
 import { ChatMessage } from '../components/ChatMessage';
 import { EmojiMenu } from '../components/EmojiMenu';
 
@@ -59,14 +56,12 @@ class ChatScreen extends React.Component {
             selectedMessage: null,
             inputText: ''
         };
-
-        this.socket = io(baseUrl.slice(0, baseUrl.search('api')));
-
-        this.props.createSocketConnection(this.socket);
     }
 
     componentDidMount() {
         const {
+            socket,
+            fetchMessages,
             navigation,
             createMessage,
             addReaction,
@@ -75,44 +70,59 @@ class ChatScreen extends React.Component {
         } = this.props;
         const cid = navigation.getParam('chatId');
 
-        this.props.fetchMessages(cid);
+        fetchMessages(cid);
 
-        this.socket.emit('joinChat', cid);
+        socket.emit('joinChat', cid);
 
-        this.socket.on('receiveMessage', (data) => {
+        socket.on('receiveMessage', (data) => {
             createMessage(data);
         });
 
-        this.socket.on('receiveReaction', (data) => {
+        socket.on('receiveReaction', (data) => {
             addReaction(data);
         });
 
-        this.socket.on('receiveAddedUser', (data) => {
+        socket.on('receiveAddedUser', (data) => {
             addUserToChat(data);
         });
 
-        this.socket.on('receiveRemovedUser', (data) => {
+        socket.on('receiveRemovedUser', (data) => {
             removeUserFromChat(data);
         });
 
-        this.socket.on('removedSelf', () => {
+        socket.on('removedSelf', () => {
             this.displayToast();
         });
     }
 
     componentWillUnmount() {
-        this.socket.disconnect();
+        const { socket, currentChat } = this.props;
+        socket.emit('leaveChat', currentChat.id);
+    }
+
+    componentDidUpdate(prevProps) {
+        const { error } = this.props;
+        if (error && prevProps.error !== error) {
+            Toast.show({
+                text: `${error.message}; try again.`,
+                buttonText: "Okay",
+                type: "danger",
+                duration: 2000
+            });
+        }
     }
 
     displayToast() {
-        const { currentChat, currentUser, navigation } = this.props;
+        const {
+            currentChat,
+            currentUser,
+            navigation
+        } = this.props;
 
         Toast.show({
-            text: `${currentUser.display_name}, you have left ${
-                currentChat.name
-            }`,
-            buttonText: 'Okay',
-            type: 'success',
+            text: `${currentUser.display_name}, you have left ${currentChat.name}`,
+            buttonText: "Okay",
+            type: "success",
             duration: 2000,
             onClose: () => navigation.navigate('Chats')
         });
@@ -139,29 +149,31 @@ class ChatScreen extends React.Component {
             fetchRemoveUserFromChat
         } = this.props;
 
-        const alertTitle = `Leaving chat ${navigation.getParam(
-            'chatName'
-        )}`;
+        const alertTitle = `Leaving chat ${navigation.getParam('chatName')}`;
         const alertBody = 'Are you sure you want to leave?';
-        Alert.alert(alertTitle, alertBody, [
-            {
-                text: 'Cancel',
-                style: 'cancel'
-            },
-            {
-                text: 'OK',
-                onPress: () => {
-                    const isSelf = true;
-                    fetchRemoveUserFromChat(
-                        this.socket,
-                        currentChat.id,
-                        currentUser.id,
-                        isSelf
-                    );
+        Alert.alert(
+            alertTitle,
+            alertBody,
+            [
+                {
+                    text: 'Cancel',
+                    style: 'cancel',
+                },
+                {
+                    text: 'OK',
+                    onPress: () => {
+                        const isSelf = true;
+                        fetchRemoveUserFromChat(
+                            this.socket,
+                            currentChat.id,
+                            currentUser.id,
+                            isSelf
+                        )
+                    }
                 }
-            }
-        ]);
-    };
+            ]
+        );
+    }
 
     render() {
         const {
@@ -182,7 +194,9 @@ class ChatScreen extends React.Component {
                         <Button transparent>
                             <Icon
                                 name="md-arrow-back"
-                                onPress={() => navigation.pop()}
+                                onPress={() =>
+                                    navigation.pop()
+                                }
                             />
                         </Button>
                     </Left>
@@ -195,12 +209,9 @@ class ChatScreen extends React.Component {
                         <Button
                             transparent
                             onPress={() =>
-                                this.props.navigation.navigate(
-                                    'AddUserToChat',
-                                    {
-                                        chatId: currentChat.id
-                                    }
-                                )
+                                this.props.navigation.navigate('AddUserToChat', {
+                                    chatId: currentChat.id
+                                })
                             }>
                             <Icon name="person-add" />
                         </Button>
@@ -219,11 +230,9 @@ class ChatScreen extends React.Component {
                 <ScrollView
                     style={styles.chatContainer}
                     contentContainerStyle={styles.contentContainer}
-                    ref={(ref) => (this.scrollView = ref)}
+                    ref={ref => this.scrollView = ref}
                     onContentSizeChange={() => {
-                        this.scrollView.scrollToEnd({
-                            animated: true
-                        });
+                        this.scrollView.scrollToEnd({ animated: true });
                     }}>
                     <Container>
                         <Content>
@@ -314,7 +323,7 @@ class ChatScreen extends React.Component {
                         position: 'absolute',
                         left: 0,
                         right: 0,
-                        bottom: 0
+                        bottom: 0,
                     }}
                     behavior="position">
                     <Form style={styles.content}>
@@ -340,11 +349,12 @@ class ChatScreen extends React.Component {
 }
 
 const mapStateToProps = ({
-    chatsReducer: { currentChat, chats, socket },
+    chatsReducer: { currentChat, chats, socket, error },
     userReducer: { currentUser },
     messageReducer: { messages }
 }) => {
     return {
+        error,
         socket,
         chats,
         currentChat,
@@ -354,27 +364,15 @@ const mapStateToProps = ({
 };
 
 const mapDispatchToProps = (dispatch) => ({
-    createSocketConnection: bindActionCreators(
-        createSocketConnection,
-        dispatch
-    ),
+    createSocketConnection: bindActionCreators(createSocketConnection, dispatch),
     addReaction: bindActionCreators(addReaction, dispatch),
     addUserToChat: bindActionCreators(addUserToChat, dispatch),
-    removeUserFromChat: bindActionCreators(
-        removeUserFromChat,
-        dispatch
-    ),
+    removeUserFromChat: bindActionCreators(removeUserFromChat, dispatch),
     createMessage: bindActionCreators(createMessage, dispatch),
     fetchMessages: bindActionCreators(fetchMessages, dispatch),
-    fetchRemoveUserFromChat: bindActionCreators(
-        fetchRemoveUserFromChat,
-        dispatch
-    ),
+    fetchRemoveUserFromChat: bindActionCreators(fetchRemoveUserFromChat, dispatch),
     fetchAddReaction: bindActionCreators(fetchAddReaction, dispatch),
-    fetchCreateMessage: bindActionCreators(
-        fetchCreateMessage,
-        dispatch
-    )
+    fetchCreateMessage: bindActionCreators(fetchCreateMessage, dispatch)
 });
 
 const styles = StyleSheet.create({
@@ -391,7 +389,8 @@ const styles = StyleSheet.create({
     chatButton: {
         top: 3
     },
-    contentContainer: {},
+    contentContainer: {
+    },
     tabBarInfoContainer: {
         position: 'absolute',
         bottom: 0,

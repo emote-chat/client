@@ -1,4 +1,5 @@
 import { AsyncStorage } from 'react-native';
+const jwtDecode = require('jwt-decode');
 
 const handleResponse = (response) => {
     return response.json().then((json) => {
@@ -19,7 +20,8 @@ const storeData = ({ access_token, user }) => {
     try {
         const userData = JSON.stringify({
             ...user,
-            userToken: access_token
+            userToken: access_token,
+            expirationTime: jwtDecode(access_token).exp * 1000
         });
         AsyncStorage.setItem('user', userData);
         return Promise.resolve();
@@ -38,7 +40,7 @@ const addAuthHeader = async () => {
             return {
                 'Content-Type': 'application/json',
                 Accept: 'application/json',
-                authorization: `Bearer ${user.userToken}` 
+                authorization: `Bearer ${user.userToken}`
             }
         }
     } catch (error) {
