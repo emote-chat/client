@@ -113,28 +113,25 @@ class ChatsScreen extends React.Component {
         return (
             <View style={styles.container}>
                 <Header>
-                    <Left>
-                        <Button transparent>
-                            <Icon name="menu" />
-                        </Button>
-                    </Left>
+                    <Left />
                     <Body>
                         <Title>Chats</Title>
                     </Body>
-                    <Right />
+                    <Right>
+                        <Button
+                            transparent
+                            onPress={() =>
+                                navigation.navigate('CreateChat')
+                            }>
+                            <Icon name="add" />
+                        </Button>
+                    </Right>
                 </Header>
                 <ScrollView
                     style={styles.container}
                     contentContainerStyle={styles.contentContainer}>
                     <Container>
                         <Content>
-                            <Button
-                                style={styles.chatButton}
-                                onPress={() =>
-                                    navigation.navigate('CreateChat')
-                                }>
-                                <Text>Create new chat</Text>
-                            </Button>
                             {
                                 <FlatList
                                     data={chats}

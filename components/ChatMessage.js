@@ -75,7 +75,11 @@ const styles = StyleSheet.create({
         textAlign: 'left'
     },
     emoji: {
-        paddingRight: 10
+        backgroundColor: '#eff0f1',
+        borderRadius: 5,
+        overflow: 'hidden',
+        padding: 3,
+        marginRight: 4
     },
     self: {
         textAlign: 'right'
