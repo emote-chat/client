@@ -27,7 +27,7 @@ import {
     Input,
     Toast
 } from 'native-base';
-import { Icon as MaterialIcon } from 'react-native-elements';
+import { Icon as MaterialIcon, Overlay } from 'react-native-elements';
 
 import {
     createMessage,
@@ -236,61 +236,85 @@ class ChatScreen extends React.Component {
                     }}>
                     <Container>
                         <Content>
-                            {messages && messages.map((message) => {
-                                const mId = message.id;
-                                const _handleLongPress = () => {
-                                    this.setState({
-                                        selectedMessage: mId
-                                    });
-                                };
+                            {messages.length
+                                ? messages.map((message) => {
+                                      const mId = message.id;
+                                      const _handleLongPress = () => {
+                                          this.setState({
+                                              selectedMessage: mId
+                                          });
+                                      };
 
-                                const handleEmojiClick = (emoji) => {
-                                    this.props.fetchAddReaction(
-                                        this.socket,
-                                        currentChat.id,
-                                        mId,
-                                        emoji
-                                    );
-                                    this.setState({
-                                        selectedMessage: null
-                                    });
-                                };
+                                      const handleEmojiClick = (
+                                          emoji
+                                      ) => {
+                                          this.props.fetchAddReaction(
+                                              this.socket,
+                                              currentChat.id,
+                                              mId,
+                                              emoji
+                                          );
+                                          this.setState({
+                                              selectedMessage: null
+                                          });
+                                      };
 
-                                const isOpen = selectedMessage == mId;
-                                const isSelf = currentUser &&
-                                    currentUser.id == message.users_id;
-                                const user = currentChat &&
-                                    currentChat.users.find(
-                                        ({ id }) => id == message.users_id
-                                    );
-                                const displayName = user && user.display_name;
+                                      const isOpen =
+                                          selectedMessage == mId;
+                                      const isSelf =
+                                          currentUser &&
+                                          currentUser.id ==
+                                              message.users_id;
+                                      const user =
+                                          currentChat &&
+                                          currentChat.users.find(
+                                              ({ id }) =>
+                                                  id ==
+                                                  message.users_id
+                                          );
+                                      const displayName =
+                                          user && user.display_name;
 
-                                return (
-                                    <TouchableOpacity
-                                        key={mId}
-                                        onLongPress={
-                                            _handleLongPress
-                                        }>
-                                        <ChatMessage
-                                            key={mId}
-                                            message={message}
-                                            isSelf={isSelf}
-                                            displayName={displayName}
-                                            users={
-                                                currentChat &&
-                                                currentChat.users
-                                            }
-                                        />
-                                        {isOpen && (
-                                            <EmojiMenu
-                                                onClick={
-                                                    handleEmojiClick
-                                                }
-                                            />
-                                        )}
-                                    </TouchableOpacity>
-                                );
-                            })}
+                                      return (
+                                          <TouchableOpacity
+                                              key={mId}
+                                              onLongPress={
+                                                  _handleLongPress
+                                              }>
+                                              <ChatMessage
+                                                  key={mId}
+                                                  message={message}
+                                                  isSelf={isSelf}
+                                                  displayName={
+                                                      displayName
+                                                  }
+                                                  users={
+                                                      currentChat &&
+                                                      currentChat.users
+                                                  }
+                                              />
+                                              <Overlay
+                                                  isVisible={isOpen}
+                                                  height={200}
+                                                  onBackdropPress={() =>
+                                                      this.setState({
+                                                          selectedMessage: null
+                                                      })
+                                                  }>
+                                                  <EmojiMenu
+                                                      recommended={
+                                                          message.recommended ||
+                                                          []
+                                                      }
+                                                      onClick={
+                                                          handleEmojiClick
+                                                      }
+                                                  />
+                                              </Overlay>
+                                          </TouchableOpacity>
+                                      );
+                                  })
+                                : null}
                         </Content>
                     </Container>
                 </ScrollView>

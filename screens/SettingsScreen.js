@@ -2,7 +2,6 @@ import React from 'react';
 import {
     ScrollView,
     View,
-    Text,
     StyleSheet,
     AsyncStorage
 } from 'react-native';
@@ -17,6 +16,7 @@ import {
     Body,
     Icon,
     Button,
+    Text,
     Title
 } from 'native-base';
 
@@ -42,17 +42,13 @@ class SettingsScreen extends React.Component {
                     contentContainerStyle={styles.contentContainer}>
                     <Container>
                         <Header>
-                            <Left>
-                                <Button transparent>
-                                    <Icon name="menu" />
-                                </Button>
-                            </Left>
+                            <Left />
                             <Body>
                                 <Title>Settings</Title>
                             </Body>
                             <Right />
                         </Header>
-                        <Content>
+                        <Content style={ styles.contentContainer }>
                             <Button full onPress={this._logout}>
                                 <Text>Logout</Text>
                             </Button>
